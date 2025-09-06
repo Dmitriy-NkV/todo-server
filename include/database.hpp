@@ -5,6 +5,24 @@
 #include <string>
 #include <chrono>
 
+namespace nlohmann {
+  template<>
+  struct adl_serializer< std::chrono::system_clock::time_point >
+  {
+    static void to_json(json& j, const std::chrono::system_clock::time_point& tp)
+    {
+      auto seconds = std::chrono::duration_cast< std::chrono::seconds >(tp.time_since_epoch()).count();
+      j = seconds;
+    }
+
+    static void from_json(const json& j, std::chrono::system_clock::time_point& tp)
+    {
+      auto seconds = j.get< int64_t >();
+      tp = std::chrono::system_clock::time_point(std::chrono::seconds(seconds));
+    }
+  };
+}
+
 namespace database
 {
   class Task
