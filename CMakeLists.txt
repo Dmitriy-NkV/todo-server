@@ -1,15 +1,28 @@
 cmake_minimum_required(VERSION 3.15)
-project(PetServer VERSION 0.1.0 LANGUAGES CXX)
+project(PetServer VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(BUILD_TESTS "Build tests" ON)
-option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+find_package(Boost 1.70 REQUIRED COMPONENTS asio beast json)
+find_package(PostgreSQL REQUIRED)
 
-add_subdirectory(src)
+add_executable(server 
+  src/main.cpp
+)
 
-if(BUILD_TESTS)
-  add_subdirectory(tests)
-endif()
+target_include_directories(server PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${Boost_INCLUDE_DIRS}
+  ${PostgreSQL_INCLUDE_DIR}
+)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+  Boost::Boost
+  Boost::asio
+  Boost::beast
+  Boost::json
+  ${PostgreSQL_LIBRARIES}
+  pthread
+)
