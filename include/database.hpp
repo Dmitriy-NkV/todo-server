@@ -36,7 +36,7 @@ namespace database
     friend void from_json(const nlohmann::json&, Task& t);
 
   private:
-    int id_;
+    std::optional< int > id_;
     std::string title_;
     std::string description_;
     std::string status_;
