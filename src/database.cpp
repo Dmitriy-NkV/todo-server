@@ -128,3 +128,36 @@ void database::Database::initialize_database()
 
   PQclear(res);
 }
+
+void database::Database::create_task(const Task& task)
+{
+  std::string create_task_query = R"(
+    INSERT INTO tasks (
+      "title",
+      "description",
+      "status",
+      "created_at"
+    )
+    VALUES (
+      $1,
+      $2,
+      $3,
+      $4
+    )
+  )";
+
+  std::vector< const char* > params;
+  params.push_back(task.get_title().c_str());
+  params.push_back(task.get_description().c_str());
+  params.push_back(task.get_status().c_str());
+  params.push_back(std::to_string(std::chrono::duration_cast< std::chrono::seconds >(task.get_created_at().time_since_epoch()).count()).c_str());
+
+  PGresult* res = PQexecParams(connection_, create_task_query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
+  if (PQresultStatus(res) != PGRES_TUPLES_OK)
+  {
+    std::string error = PQerrorMessage(connection_);
+    PQclear(res);
+    throw std::logic_error(error);
+  }
+  PQclear(res);
+}
