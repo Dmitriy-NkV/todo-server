@@ -16,6 +16,22 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
 namespace server
 {
+  class Listener: public std::enable_shared_from_this< Listener >
+  {
+  public:
+    Listener(net::io_context& ioc, tcp::endpoint endpoint, database::Database& db);
+
+    void run();
+
+  private:
+    net::io_context& ioc_;
+    tcp::acceptor acceptor_;
+    database::Database& db_;
+
+    void do_accept();
+    void on_accept(beast::error_code ec, tcp::socket socket);
+  };
+
   class Server
   {
   public:
