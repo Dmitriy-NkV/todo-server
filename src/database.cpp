@@ -65,3 +65,21 @@ void database::from_json(const nlohmann::json& j, Task& t)
     task.created_at_ = std::chrono::system_clock::now();
   }
 }
+
+database::Database::Database(const std::string& connection_string):
+  connection_string_(connection_string),
+  connection_(PQconnectdb(connection_string_.c_str()))
+{
+  if (PQstatus(connection_) != CONNECTION_OK)
+  {
+    std::string error = PQerrorMessage(connection_);
+    PQfinish(connection_);
+    connection_ = nullptr;
+    throw std::logic_error(error);
+  }
+}
+
+database::Database::~Database()
+{
+  PQfinish(connection_);
+}
