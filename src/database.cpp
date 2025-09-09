@@ -169,6 +169,39 @@ void database::Database::create_task(const Task& task)
   PQclear(res);
 }
 
+std::vector< database::Task > database::Database::get_all_tasks()
+{
+  std::string get_tasks_query = R"(
+    SELECT id, title, description, status, created_at FROM tasks
+  )";
+
+  std::vector< const char* > params;
+
+  PGresult* res = PQexecParams(connection_, get_tasks_query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
+  if (PQresultStatus(res) != PGRES_TUPLES_OK)
+  {
+    std::string error = PQerrorMessage(connection_);
+    PQclear(res);
+    throw std::logic_error(error);
+  }
+
+  std::vector< database::Task > tasks;
+
+  for (size_t i = 0; i != PQntuples(res); ++i)
+  {
+    int id = std::stoi(PQgetvalue(res, 0, 0));
+    std::string title = PQgetvalue(res, 0, 1);
+    std::string description = PQgetvalue(res, 0, 2);
+    std::string status = PQgetvalue(res, 0, 3);
+    std::chrono::system_clock::time_point created_at = std::chrono::system_clock::time_point(std::chrono::seconds(std::stoll(PQgetvalue(res, 0, 4))));
+
+    tasks.emplace_back(id, title, description, status, created_at);
+  }
+
+  PQclear(res);
+  return tasks;
+}
+
 std::optional< database::Task > database::Database::get_task_by_id(const Task& task)
 {
   std::string get_task_query = R"(
@@ -200,7 +233,6 @@ std::optional< database::Task > database::Database::get_task_by_id(const Task& t
   std::chrono::system_clock::time_point created_at = std::chrono::system_clock::time_point(std::chrono::seconds(std::stoll(PQgetvalue(res, 0, 4))));
 
   PQclear(res);
-
   return Task(id, title, description, status, created_at);
 }
 
