@@ -29,6 +29,9 @@ namespace database
 {
   class Task
   {
+    friend void to_json(nlohmann::json& j, const Task& t);
+    friend void from_json(const nlohmann::json&, Task& t);
+
   public:
     Task() = default;
     Task(int id, std::string title, std::string description, std::string status, std::chrono::system_clock::time_point created_at);
@@ -39,9 +42,6 @@ namespace database
     std::optional< std::string > get_description() const;
     std::optional< std::string > get_status() const;
     std::chrono::system_clock::time_point get_created_at() const;
-
-    friend void to_json(nlohmann::json& j, const Task& t);
-    friend void from_json(const nlohmann::json&, Task& t);
 
   private:
     std::optional< int > id_;
