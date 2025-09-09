@@ -125,13 +125,7 @@ void database::Database::initialize_database()
     )
   )";
 
-  res = PQexec(connection_, create_table_query.c_str());
-  if (PQresultStatus(res) != PGRES_COMMAND_OK)
-  {
-    std::string error = PQerrorMessage(connection_);
-    PQclear(res);
-    throw std::logic_error(error);
-  }
+  PGresult* res = execute_query(create_table_query, {});
 
   PQclear(res);
 }
@@ -159,13 +153,7 @@ void database::Database::create_task(const Task& task)
   params.push_back(task.get_status().value().c_str());
   params.push_back(std::to_string(std::chrono::duration_cast< std::chrono::seconds >(task.get_created_at().time_since_epoch()).count()).c_str());
 
-  PGresult* res = PQexecParams(connection_, create_task_query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
-  if (PQresultStatus(res) != PGRES_TUPLES_OK)
-  {
-    std::string error = PQerrorMessage(connection_);
-    PQclear(res);
-    throw std::logic_error(error);
-  }
+  PGresult* res = execute_query(create_task_query, params);
   PQclear(res);
 }
 
@@ -175,15 +163,7 @@ std::vector< database::Task > database::Database::get_all_tasks()
     SELECT id, title, description, status, created_at FROM tasks
   )";
 
-  std::vector< const char* > params;
-
-  PGresult* res = PQexecParams(connection_, get_tasks_query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
-  if (PQresultStatus(res) != PGRES_TUPLES_OK)
-  {
-    std::string error = PQerrorMessage(connection_);
-    PQclear(res);
-    throw std::logic_error(error);
-  }
+  PGresult* res = execute_query(get_tasks_query, {});
 
   std::vector< database::Task > tasks;
 
@@ -212,13 +192,7 @@ std::optional< database::Task > database::Database::get_task_by_id(const Task& t
   std::vector< const char* > params;
   params.push_back(std::to_string(task.get_id().value()).c_str());
 
-  PGresult* res = PQexecParams(connection_, get_task_query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
-  if (PQresultStatus(res) != PGRES_TUPLES_OK)
-  {
-    std::string error = PQerrorMessage(connection_);
-    PQclear(res);
-    throw std::logic_error(error);
-  }
+  PGresult* res = execute_query(get_task_query, params);
 
   if (PQntuples(res) == 0)
   {
@@ -277,13 +251,7 @@ void database::Database::update_task(const Task& task)
   }
   update_task_query += " WHERE id = $" + std::to_string(paramIndex);
 
-  PGresult* res = PQexecParams(connection_, update_task_query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
-  if (PQresultStatus(res) != PGRES_TUPLES_OK)
-  {
-    std::string error = PQerrorMessage(connection_);
-    PQclear(res);
-    throw std::logic_error(error);
-  }
+  PGresult* res = execute_query(update_task_query, params);
   PQclear(res);
 }
 
@@ -297,12 +265,18 @@ void database::Database::delete_task(const Task& task)
   std::vector< const char* > params;
   params.push_back(std::to_string(task.get_id().value()).c_str());
 
-  PGresult* res = PQexecParams(connection_, delete_task_query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
+  PGresult* res = execute_query(delete_task_query, params);
+  PQclear(res);
+}
+
+PGresult* database::Database::execute_query(const std::string& query, const std::vector< const char* >& params)
+{
+  PGresult* res = PQexecParams(connection_, query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
   if (PQresultStatus(res) != PGRES_TUPLES_OK)
   {
     std::string error = PQerrorMessage(connection_);
     PQclear(res);
     throw std::logic_error(error);
   }
-  PQclear(res);
+  return res;
 }
