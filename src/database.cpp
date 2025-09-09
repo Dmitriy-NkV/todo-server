@@ -51,11 +51,18 @@ void database::from_json(const nlohmann::json& j, Task& t)
   {
     task.id_ = j["id"];
   }
-
-  task.title_ = j["title"];
-  task.description_ = j["description"];
-  task.status_ = j["status"];
-
+  if (j.contains("title"))
+  {
+    task.id_ = j["title"];
+  }
+  if (j.contains("description"))
+  {
+    task.id_ = j["description"];
+  }
+  if (j.contains("status"))
+  {
+    task.id_ = j["status"];
+  }
   if (j.contains("created_at"))
   {
     task.created_at_ = j["created_at"];
