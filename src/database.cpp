@@ -36,40 +36,39 @@ std::chrono::system_clock::time_point database::Task::get_created_at() const
 void database::to_json(nlohmann::json& j, const Task& t)
 {
   j = nlohmann::json{
-    { "id", (*t.id_) },
-    { "title", t.title_ },
-    { "description", t.description_ },
-    { "status", t.status_ },
+    { "id", t.id_.value() },
+    { "title", t.title_.value() },
+    { "description", t.description_.value() },
+    { "status", t.status_.value() },
     { "created_at", t.created_at_ }
   };
 }
 
 void database::from_json(const nlohmann::json& j, Task& t)
 {
-  database::Task task;
   if (j.contains("id"))
   {
-    task.id_ = j["id"];
+    t.id_ = j["id"];
   }
   if (j.contains("title"))
   {
-    task.id_ = j["title"];
+    t.title_ = j["title"];
   }
   if (j.contains("description"))
   {
-    task.id_ = j["description"];
+    t.description_ = j["description"];
   }
   if (j.contains("status"))
   {
-    task.id_ = j["status"];
+    t.status_ = j["status"];
   }
   if (j.contains("created_at"))
   {
-    task.created_at_ = j["created_at"];
+    t.created_at_ = j["created_at"];
   }
   else
   {
-    task.created_at_ = std::chrono::system_clock::now();
+    t.created_at_ = std::chrono::system_clock::now();
   }
 }
 
@@ -88,7 +87,10 @@ database::Database::Database(const std::string& connection_string):
 
 database::Database::~Database()
 {
-  PQfinish(connection_);
+  if (connection_ != nullptr)
+  {
+    PQfinish(connection_);
+  }
 }
 
 void database::Database::initialize_database()
@@ -101,13 +103,7 @@ void database::Database::initialize_database()
     )
   )";
 
-  PGresult* res = PQexec(connection_, check_table_query.c_str());
-  if (PQresultStatus(res) != PGRES_TUPLES_OK)
-  {
-    std::string error = PQerrorMessage(connection_);
-    PQclear(res);
-    throw std::logic_error(error);
-  }
+  PGresult* res = execute_query(check_table_query, {});
 
   if (strcmp(PQgetvalue(res, 0, 0), "t") == 0)
   {
@@ -125,7 +121,7 @@ void database::Database::initialize_database()
     )
   )";
 
-  PGresult* res = execute_query(create_table_query, {});
+  res = execute_query(create_table_query, {});
 
   PQclear(res);
 }
@@ -277,7 +273,7 @@ database::Task database::Database::result_to_task(const PGresult* res, size_t ro
   std::string title = PQgetvalue(res, row, 1);
   std::string description = PQgetvalue(res, row, 2);
   std::string status = PQgetvalue(res, row, 3);
-  std::chrono::system_clock::time_point created_at = std::chrono::system_clock::time_point(std::chrono::seconds(std::stoll(PQgetvalue(res, 0, 4))));
+  std::chrono::system_clock::time_point created_at = std::chrono::system_clock::time_point(std::chrono::seconds(std::stoll(PQgetvalue(res, row, 4))));
 
   return Task(id, title, description, status, created_at);
 }
