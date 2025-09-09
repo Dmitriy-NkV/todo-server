@@ -8,6 +8,31 @@ database::Task::Task(int id, std::string title, std::string description, std::st
   created_at_(created_at)
 {}
 
+std::optional< int > database::Task::get_id() const
+{
+  return id_;
+}
+
+std::string database::Task::get_title() const
+{
+  return title_;
+}
+
+std::string database::Task::get_description() const
+{
+  return description_;
+}
+
+std::string database::Task::get_status() const
+{
+  return status_;
+}
+
+std::chrono::system_clock::time_point database::Task::get_created_at() const
+{
+  return created_at_;
+}
+
 void database::to_json(nlohmann::json& j, const Task& t)
 {
   j = nlohmann::json{

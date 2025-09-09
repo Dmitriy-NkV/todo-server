@@ -2,6 +2,7 @@
 #define DATABASE_HPP
 
 #include <nlohmann/json.hpp>
+#include <postgresql/libpq-fe.h>
 #include <string>
 #include <chrono>
 
@@ -17,7 +18,7 @@ namespace nlohmann {
 
     static void from_json(const json& j, std::chrono::system_clock::time_point& tp)
     {
-      auto seconds = j.get< int64_t >();
+      auto seconds = j.get< long long >();
       tp = std::chrono::system_clock::time_point(std::chrono::seconds(seconds));
     }
   };
@@ -31,6 +32,12 @@ namespace database
     Task() = default;
     Task(int id, std::string title, std::string description, std::string status, std::chrono::system_clock::time_point created_at);
     ~Task() = default;
+
+    std::optional< int > get_id() const;
+    std::string get_title() const;
+    std::string get_description() const;
+    std::string get_status() const;
+    std::chrono::system_clock::time_point get_created_at() const;
 
     friend void to_json(nlohmann::json& j, const Task& t);
     friend void from_json(const nlohmann::json&, Task& t);
