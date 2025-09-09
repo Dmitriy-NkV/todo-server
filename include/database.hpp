@@ -52,6 +52,28 @@ namespace database
 
   void to_json(nlohmann::json& j, const Task& t);
   void from_json(const nlohmann::json&, Task& t);
+
+  class Database
+  {
+  public:
+    Database(const std::string& connection_string);
+    ~Database();
+
+    void create_task(const Task& task);
+    std::vector< Task > get_all_tasks();
+    std::optional< Task > get_task_by_id(int id);
+    void update_task(const Task& task);
+    void delete_task(int id);
+
+    void initialize_database();
+
+  private:
+    std::string connection_string_;
+    PGconn* connection_;
+
+    PGresult* execute_query(const std::string& query);
+    Task result_to_task(const PGresult* res, int row);
+  };
 }
 
 #endif
