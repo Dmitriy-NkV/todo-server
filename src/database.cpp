@@ -169,6 +169,57 @@ void database::Database::create_task(const Task& task)
   PQclear(res);
 }
 
+void database::Database::update_task(const Task& task)
+{
+  std::vector< const char* > params;
+  std::vector< std::string > setParams;
+  size_t paramIndex = 1;
+  if (task.get_title() != std::nullopt)
+  {
+    params.push_back(task.get_title().value().c_str());
+    setParams.push_back("title = $" + std::to_string(paramIndex++));
+  }
+
+  if (task.get_description() != std::nullopt)
+  {
+    params.push_back(task.get_description().value().c_str());
+    setParams.push_back("description = $" + std::to_string(paramIndex++));
+  }
+
+  if (task.get_status() != std::nullopt)
+  {
+    params.push_back(task.get_status().value().c_str());
+    setParams.push_back("status = $" + std::to_string(paramIndex++));
+  }
+
+  if (paramIndex == 1)
+  {
+    return;
+  }
+
+  params.push_back(std::to_string(task.get_id().value()).c_str());
+
+  std::string update_task_query = "UPDATE tasks SET ";
+  for (size_t i = 0; i != setParams.size(); ++i)
+  {
+    if (i != 0)
+    {
+      update_task_query += ", ";
+    }
+    update_task_query += setParams[i];
+  }
+  update_task_query += " WHERE id = $" + std::to_string(paramIndex);
+
+  PGresult* res = PQexecParams(connection_, update_task_query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
+  if (PQresultStatus(res) != PGRES_TUPLES_OK)
+  {
+    std::string error = PQerrorMessage(connection_);
+    PQclear(res);
+    throw std::logic_error(error);
+  }
+  PQclear(res);
+}
+
 void database::Database::delete_task(const Task& task)
 {
   std::string delete_task_query = R"(
