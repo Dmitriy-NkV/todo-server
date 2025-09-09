@@ -169,13 +169,7 @@ std::vector< database::Task > database::Database::get_all_tasks()
 
   for (size_t i = 0; i != PQntuples(res); ++i)
   {
-    int id = std::stoi(PQgetvalue(res, 0, 0));
-    std::string title = PQgetvalue(res, 0, 1);
-    std::string description = PQgetvalue(res, 0, 2);
-    std::string status = PQgetvalue(res, 0, 3);
-    std::chrono::system_clock::time_point created_at = std::chrono::system_clock::time_point(std::chrono::seconds(std::stoll(PQgetvalue(res, 0, 4))));
-
-    tasks.emplace_back(id, title, description, status, created_at);
+    tasks.push_back(result_to_task(res, i));
   }
 
   PQclear(res);
@@ -200,14 +194,10 @@ std::optional< database::Task > database::Database::get_task_by_id(const Task& t
     return std::nullopt;
   }
 
-  int id = std::stoi(PQgetvalue(res, 0, 0));
-  std::string title = PQgetvalue(res, 0, 1);
-  std::string description = PQgetvalue(res, 0, 2);
-  std::string status = PQgetvalue(res, 0, 3);
-  std::chrono::system_clock::time_point created_at = std::chrono::system_clock::time_point(std::chrono::seconds(std::stoll(PQgetvalue(res, 0, 4))));
+  Task task = result_to_task(res, 0);
 
   PQclear(res);
-  return Task(id, title, description, status, created_at);
+  return task;
 }
 
 void database::Database::update_task(const Task& task)
@@ -279,4 +269,15 @@ PGresult* database::Database::execute_query(const std::string& query, const std:
     throw std::logic_error(error);
   }
   return res;
+}
+
+database::Task database::Database::result_to_task(const PGresult* res, size_t row)
+{
+  int id = std::stoi(PQgetvalue(res, row, 0));
+  std::string title = PQgetvalue(res, row, 1);
+  std::string description = PQgetvalue(res, row, 2);
+  std::string status = PQgetvalue(res, row, 3);
+  std::chrono::system_clock::time_point created_at = std::chrono::system_clock::time_point(std::chrono::seconds(std::stoll(PQgetvalue(res, 0, 4))));
+
+  return Task(id, title, description, status, created_at);
 }

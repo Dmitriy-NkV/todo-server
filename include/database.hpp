@@ -72,7 +72,7 @@ namespace database
     PGconn* connection_;
 
     PGresult* execute_query(const std::string& query, const std::vector< const char* >& params);
-    Task result_to_task(const PGresult* res, int row);
+    Task result_to_task(const PGresult* res, size_t row);
   };
 }
 
