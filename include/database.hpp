@@ -61,9 +61,9 @@ namespace database
 
     void create_task(const Task& task);
     std::vector< Task > get_all_tasks();
-    std::optional< Task > get_task_by_id(int id);
+    std::optional< Task > get_task_by_id(const Task& task);
     void update_task(const Task& task);
-    void delete_task(int id);
+    void delete_task(const Task& task);
 
     void initialize_database();
 

@@ -168,3 +168,23 @@ void database::Database::create_task(const Task& task)
   }
   PQclear(res);
 }
+
+void database::Database::delete_task(const Task& task)
+{
+  std::string create_task_query = R"(
+    DELETE FROM tasks
+    WHERE id = $1
+  )";
+
+  std::vector< const char* > params;
+  params.push_back(std::to_string(task.get_id().value()).c_str());
+
+  PGresult* res = PQexecParams(connection_, create_task_query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
+  if (PQresultStatus(res) != PGRES_TUPLES_OK)
+  {
+    std::string error = PQerrorMessage(connection_);
+    PQclear(res);
+    throw std::logic_error(error);
+  }
+  PQclear(res);
+}
