@@ -169,6 +169,41 @@ void database::Database::create_task(const Task& task)
   PQclear(res);
 }
 
+std::optional< database::Task > database::Database::get_task_by_id(const Task& task)
+{
+  std::string get_task_query = R"(
+    SELECT id, title, description, status, created_at FROM tasks
+    WHERE id = $1
+  )";
+
+  std::vector< const char* > params;
+  params.push_back(std::to_string(task.get_id().value()).c_str());
+
+  PGresult* res = PQexecParams(connection_, get_task_query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
+  if (PQresultStatus(res) != PGRES_TUPLES_OK)
+  {
+    std::string error = PQerrorMessage(connection_);
+    PQclear(res);
+    throw std::logic_error(error);
+  }
+
+  if (PQntuples(res) == 0)
+  {
+    PQclear(res);
+    return std::nullopt;
+  }
+
+  int id = std::stoi(PQgetvalue(res, 0, 0));
+  std::string title = PQgetvalue(res, 0, 1);
+  std::string description = PQgetvalue(res, 0, 2);
+  std::string status = PQgetvalue(res, 0, 3);
+  std::chrono::system_clock::time_point created_at = std::chrono::system_clock::time_point(std::chrono::seconds(std::stoll(PQgetvalue(res, 0, 4))));
+
+  PQclear(res);
+
+  return Task(id, title, description, status, created_at);
+}
+
 void database::Database::update_task(const Task& task)
 {
   std::vector< const char* > params;
