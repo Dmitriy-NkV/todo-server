@@ -71,6 +71,7 @@ namespace database
   private:
     std::string connection_string_;
     PGconn* connection_;
+    std::mutex db_mutex_;
 
     PGresult* execute_query(const std::string& query, const std::vector< const char* >& params);
     Task result_to_task(const PGresult* res, size_t row);

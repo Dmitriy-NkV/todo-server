@@ -95,6 +95,7 @@ database::Database::~Database()
 
 void database::Database::initialize_database()
 {
+  std::lock_guard< std::mutex > lock(db_mutex_);
   std::string check_table_query = R"(
     SELECT EXISTS (
       SELECT 1 FROM information_schema.tables 
@@ -128,6 +129,7 @@ void database::Database::initialize_database()
 
 void database::Database::create_task(const Task& task)
 {
+  std::lock_guard< std::mutex > lock(db_mutex_);
   std::string create_task_query = R"(
     INSERT INTO tasks (
       "title",
@@ -155,6 +157,7 @@ void database::Database::create_task(const Task& task)
 
 std::vector< database::Task > database::Database::get_all_tasks()
 {
+  std::lock_guard< std::mutex > lock(db_mutex_);
   std::string get_tasks_query = R"(
     SELECT id, title, description, status, created_at FROM tasks
   )";
@@ -174,6 +177,7 @@ std::vector< database::Task > database::Database::get_all_tasks()
 
 std::optional< database::Task > database::Database::get_task_by_id(const Task& task)
 {
+  std::lock_guard< std::mutex > lock(db_mutex_);
   std::string get_task_query = R"(
     SELECT id, title, description, status, created_at FROM tasks
     WHERE id = $1
@@ -198,6 +202,7 @@ std::optional< database::Task > database::Database::get_task_by_id(const Task& t
 
 void database::Database::update_task(const Task& task)
 {
+  std::lock_guard< std::mutex > lock(db_mutex_);
   std::vector< const char* > params;
   std::vector< std::string > setParams;
   size_t paramIndex = 1;
@@ -243,6 +248,7 @@ void database::Database::update_task(const Task& task)
 
 void database::Database::delete_task(const Task& task)
 {
+  std::lock_guard< std::mutex > lock(db_mutex_);
   std::string delete_task_query = R"(
     DELETE FROM tasks
     WHERE id = $1
