@@ -34,9 +34,9 @@ namespace database
     ~Task() = default;
 
     std::optional< int > get_id() const;
-    std::string get_title() const;
-    std::string get_description() const;
-    std::string get_status() const;
+    std::optional< std::string > get_title() const;
+    std::optional< std::string > get_description() const;
+    std::optional< std::string > get_status() const;
     std::chrono::system_clock::time_point get_created_at() const;
 
     friend void to_json(nlohmann::json& j, const Task& t);
@@ -44,9 +44,9 @@ namespace database
 
   private:
     std::optional< int > id_;
-    std::string title_;
-    std::string description_;
-    std::string status_;
+    std::optional< std::string > title_;
+    std::optional< std::string > description_;
+    std::optional< std::string > status_;
     std::chrono::system_clock::time_point created_at_;
   };
 

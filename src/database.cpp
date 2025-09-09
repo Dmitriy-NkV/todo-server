@@ -13,17 +13,17 @@ std::optional< int > database::Task::get_id() const
   return id_;
 }
 
-std::string database::Task::get_title() const
+std::optional< std::string > database::Task::get_title() const
 {
   return title_;
 }
 
-std::string database::Task::get_description() const
+std::optional< std::string > database::Task::get_description() const
 {
   return description_;
 }
 
-std::string database::Task::get_status() const
+std::optional< std::string > database::Task::get_status() const
 {
   return status_;
 }
@@ -154,9 +154,9 @@ void database::Database::create_task(const Task& task)
   )";
 
   std::vector< const char* > params;
-  params.push_back(task.get_title().c_str());
-  params.push_back(task.get_description().c_str());
-  params.push_back(task.get_status().c_str());
+  params.push_back(task.get_title().value().c_str());
+  params.push_back(task.get_description().value().c_str());
+  params.push_back(task.get_status().value().c_str());
   params.push_back(std::to_string(std::chrono::duration_cast< std::chrono::seconds >(task.get_created_at().time_since_epoch()).count()).c_str());
 
   PGresult* res = PQexecParams(connection_, create_task_query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
@@ -171,7 +171,7 @@ void database::Database::create_task(const Task& task)
 
 void database::Database::delete_task(const Task& task)
 {
-  std::string create_task_query = R"(
+  std::string delete_task_query = R"(
     DELETE FROM tasks
     WHERE id = $1
   )";
@@ -179,7 +179,7 @@ void database::Database::delete_task(const Task& task)
   std::vector< const char* > params;
   params.push_back(std::to_string(task.get_id().value()).c_str());
 
-  PGresult* res = PQexecParams(connection_, create_task_query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
+  PGresult* res = PQexecParams(connection_, delete_task_query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
   if (PQresultStatus(res) != PGRES_TUPLES_OK)
   {
     std::string error = PQerrorMessage(connection_);
