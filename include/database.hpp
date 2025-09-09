@@ -6,7 +6,8 @@
 #include <string>
 #include <chrono>
 
-namespace nlohmann {
+namespace nlohmann
+{
   template<>
   struct adl_serializer< std::chrono::system_clock::time_point >
   {
