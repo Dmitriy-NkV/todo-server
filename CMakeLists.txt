@@ -17,9 +17,16 @@ FetchContent_Declare(nlohmann_json
 FetchContent_MakeAvailable(nlohmann_json)
 
 add_executable(server
-  src/database.cpp
-  src/server.cpp
   src/main.cpp
+  src/server.cpp
+  src/database.cpp
+  src/handler_factory.cpp
+  src/utils/http_utils.cpp
+  src/handlers/delete_task_handler.cpp
+  src/handlers/get_task_handler.cpp
+  src/handlers/get_tasks_handler.cpp
+  src/handlers/post_task_handler.cpp
+  src/handlers/put_task_handler.cpp
 )
 
 target_include_directories(server PRIVATE
