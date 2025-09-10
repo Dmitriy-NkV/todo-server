@@ -11,6 +11,30 @@ server::Listener::Listener(net::io_context& ioc, database::Database& db):
   db_(db)
 {}
 
+void server::Listener::run()
+{
+  do_accept();
+}
+
+void server::Listener::do_accept()
+{
+  acceptor_.async_accept(net::make_strand(ioc_), beast::bind_front_handler(&Listener::on_accept, shared_from_this()));
+}
+
+void server::Listener::on_accept(beast::error_code ec, tcp::socket socket)
+{
+  if (ec)
+  {
+    return;
+  }
+  else
+  {
+    std::make_shared< Session >(std::move(socket), db_)->run();
+  }
+
+  do_accept();
+}
+
 std::expected< std::shared_ptr< server::Listener >, std::string > server::Listener::create(net::io_context& ioc,
   tcp::endpoint endpoint, database::Database& db)
 {
