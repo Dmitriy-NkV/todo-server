@@ -4,7 +4,7 @@
 #include <boost/beast/http.hpp>
 #include "database.hpp"
 
-namespace beast = boost::beast;  
+namespace beast = boost::beast;
 namespace http = beast::http;
 
 namespace handlers
