@@ -5,6 +5,11 @@ server::Session::Session(tcp::socket&& socket, database::Database& db):
   db_(db)
 {}
 
+void server::Session::run()
+{
+  net::dispatch(stream_.get_executor(), beast::bind_front_handler(&Session::do_read, shared_from_this()));
+}
+
 void server::Session::do_read()
 {
   req_.clear();
@@ -47,6 +52,11 @@ void server::Session::on_write(bool keep_alive, beast::error_code ec, std::size_
   do_read();
 }
 
+void server::Session::do_close()
+{
+  beast::error_code ec;
+  stream_.socket().shutdown(tcp::socket::shutdown_send, ec);
+}
 
 server::Listener::Listener(net::io_context& ioc, database::Database& db):
   ioc_(ioc),
