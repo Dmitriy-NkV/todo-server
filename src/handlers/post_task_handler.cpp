@@ -4,3 +4,8 @@ bool handlers::PostTaskHandler::can_handle(const http::request< http::string_bod
 {
   return req.method() == http::verb::post && req.target().starts_with("/task");
 }
+
+std::unique_ptr< handlers::RequestHandler > handlers::PostTaskHandler::create() const
+{
+  return std::make_unique< PostTaskHandler >();
+}

@@ -4,3 +4,8 @@ bool handlers::GetTasksHandler::can_handle(const http::request< http::string_bod
 {
   return req.method() == http::verb::get && req.target().starts_with("/tasks");
 }
+
+std::unique_ptr< handlers::RequestHandler > handlers::GetTasksHandler::create() const
+{
+  return std::make_unique< GetTasksHandler >();
+}
