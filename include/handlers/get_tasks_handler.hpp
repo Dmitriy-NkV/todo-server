@@ -5,7 +5,7 @@
 
 namespace handlers
 {
-  class GetTaskSHandler: public RequestHandler
+  class GetTasksHandler: public RequestHandler
   {
   public:
     bool can_handle(const http::request< http::string_body >& req) const override;
