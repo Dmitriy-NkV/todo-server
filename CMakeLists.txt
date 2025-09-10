@@ -31,6 +31,8 @@ add_executable(server
 
 target_include_directories(server PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/handlers
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/utils
   ${Boost_INCLUDE_DIRS}
   ${PostgreSQL_INCLUDE_DIRS}
 )
