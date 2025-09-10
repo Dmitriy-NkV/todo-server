@@ -18,7 +18,6 @@ void server::Session::do_read()
   http::async_read(stream_, buffer_, req_, beast::bind_front_handler(&Session::on_read, shared_from_this()));
 }
 
-
 void server::Session::on_read(beast::error_code ec, std::size_t bytes_transferred)
 {
   boost::ignore_unused(bytes_transferred);
