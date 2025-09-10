@@ -5,6 +5,31 @@ server::Session::Session(tcp::socket&& socket, database::Database& db):
   db_(db)
 {}
 
+void server::Session::do_read()
+{
+  req_.clear();
+  stream_.expires_after(std::chrono::seconds(30));
+
+  http::async_read(stream_, buffer_, req_, beast::bind_front_handler(&Session::on_read, shared_from_this()));
+}
+
+void server::Session::on_read(beast::error_code ec, std::size_t bytes_transferred)
+{
+  boost::ignore_unused(bytes_transferred);
+
+  if (ec == http::error::end_of_stream)
+  {
+    return do_close();
+  }
+
+  if (ec)
+  {
+    return;
+  }
+
+  send_response(handle_request(std::move(req_), db_));
+}
+
 server::Listener::Listener(net::io_context& ioc, database::Database& db):
   ioc_(ioc),
   acceptor_(net::make_strand(ioc)),
