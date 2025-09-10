@@ -9,6 +9,8 @@
 #include <expected>
 #include <thread>
 #include "database.hpp"
+#include "handler_factory.hpp"
+#include "http_utils.hpp"
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>

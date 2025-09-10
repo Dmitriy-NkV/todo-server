@@ -32,7 +32,14 @@ void server::Session::on_read(beast::error_code ec, std::size_t bytes_transferre
     return;
   }
 
-  send_response(handle_request(std::move(req_), db_));
+  std::unique_ptr< handlers::RequestHandler > handler = handlers::HandlerFactory().create_handler(req_);
+  if (!handler)
+  {
+    send_response(std::move(utils::create_error_response(http::status::not_found, "Not found")));
+  }
+  auto res = handler->handle_request(req_, db_);
+
+  send_response(std::move(res));
 }
 
 void server::Session::send_response(http::message_generator&& msg)
