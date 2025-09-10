@@ -70,6 +70,7 @@ namespace server
     bool running_;
 
     net::io_context ioc_;
+    std::shared_ptr< Listener > listener_;
     std::vector< std::thread > thread_pool_;
     database::Database& db_;
   };

@@ -43,3 +43,25 @@ std::expected< std::shared_ptr< server::Listener >, std::string > server::Listen
 
   return listener;
 }
+
+server::Server::Server(const std::string& host, unsigned short port, size_t threads_num, database::Database& db):
+  host_(host),
+  port_(port),
+  threads_num_(std::max(static_cast< size_t >(1), threads_num)),
+  running_(false),
+  ioc_(threads_num_),
+  listener_(),
+  thread_pool_(),
+  db_(db)
+{
+  auto const address = net::ip::make_address(host);
+  auto const endpoint = tcp::endpoint(address, port);
+
+  auto listener = Listener::create(ioc_, endpoint, db);
+  if (!listener.has_value())
+  {
+    throw std::runtime_error(listener.error());
+  }
+
+  listener_ = std::move(listener.value());
+}
