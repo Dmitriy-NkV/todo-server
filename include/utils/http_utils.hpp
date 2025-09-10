@@ -9,9 +9,9 @@ namespace http = beast::http;
 
 namespace utils
 {
-  http::response< http::string_body > create_error_responce(http::status status, const std::string& message);
+  http::response< http::string_body > create_error_response(http::status status, const std::string& message);
 
-  http::response< http::string_body > create_json_responce(http::status status, const nlohmann::json& json);
+  http::response< http::string_body > create_json_response(http::status status, const nlohmann::json& json);
 }
 
 #endif

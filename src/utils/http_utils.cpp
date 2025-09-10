@@ -1,6 +1,6 @@
 #include "http_utils.hpp"
 
-http::response< http::string_body > utils::create_error_responce(http::status status, const std::string& message)
+http::response< http::string_body > utils::create_error_response(http::status status, const std::string& message)
 {
   http::response<http::string_body> res(status, 11);
   res.set(http::field::content_type, "application/json");
@@ -17,7 +17,7 @@ http::response< http::string_body > utils::create_error_responce(http::status st
   return res;
 }
 
-http::response< http::string_body > utils::create_json_responce(http::status status, const nlohmann::json& json)
+http::response< http::string_body > utils::create_json_response(http::status status, const nlohmann::json& json)
 {
   http::response<http::string_body> res(status, 11);
   res.set(http::field::content_type, "application/json");
