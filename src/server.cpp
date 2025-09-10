@@ -30,6 +30,24 @@ void server::Session::on_read(beast::error_code ec, std::size_t bytes_transferre
   send_response(handle_request(std::move(req_), db_));
 }
 
+void server::Session::on_write(bool keep_alive, beast::error_code ec, std::size_t bytes_transferred)
+{
+  boost::ignore_unused(bytes_transferred);
+
+  if (ec)
+  {
+    return;
+  }
+
+  if (!keep_alive)
+  {
+    return do_close();
+  }
+
+  do_read();
+}
+
+
 server::Listener::Listener(net::io_context& ioc, database::Database& db):
   ioc_(ioc),
   acceptor_(net::make_strand(ioc)),
