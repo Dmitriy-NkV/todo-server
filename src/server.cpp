@@ -18,6 +18,7 @@ void server::Session::do_read()
   http::async_read(stream_, buffer_, req_, beast::bind_front_handler(&Session::on_read, shared_from_this()));
 }
 
+
 void server::Session::on_read(beast::error_code ec, std::size_t bytes_transferred)
 {
   boost::ignore_unused(bytes_transferred);
@@ -33,6 +34,12 @@ void server::Session::on_read(beast::error_code ec, std::size_t bytes_transferre
   }
 
   send_response(handle_request(std::move(req_), db_));
+}
+
+void server::Session::send_response(http::message_generator&& msg)
+{
+  bool keep_alive = msg.keep_alive();
+  beast::async_write(stream_, std::move(msg), beast::bind_front_handler(&Session::on_write, shared_from_this(), keep_alive));
 }
 
 void server::Session::on_write(bool keep_alive, beast::error_code ec, std::size_t bytes_transferred)
