@@ -194,10 +194,10 @@ std::optional< database::Task > database::Database::get_task_by_id(const Task& t
     return std::nullopt;
   }
 
-  Task task = result_to_task(res, 0);
+  Task task_res = result_to_task(res, 0);
 
   PQclear(res);
-  return task;
+  return task_res;
 }
 
 void database::Database::update_task(const Task& task)
