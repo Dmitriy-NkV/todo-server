@@ -65,3 +65,43 @@ server::Server::Server(const std::string& host, unsigned short port, size_t thre
 
   listener_ = std::move(listener.value());
 }
+
+void server::Server::start()
+{
+  if (running_)
+  {
+    return;
+  }
+  running_ = true;
+
+  listener_->run();
+
+  thread_pool_.reserve(threads_num_);
+  for (size_t i = 0; i != threads_num_; ++i)
+  {
+    thread_pool_.emplace_back([this]()
+    {
+      ioc_.run();
+    });
+  }
+}
+
+void server::Server::stop()
+{
+  if (!running_)
+  {
+    return;
+  }
+  running_ = false;
+
+  ioc_.stop();
+  for (size_t i = 0; i != threads_num_; ++i)
+  {
+    if (thread_pool_[i].joinable())
+    {
+      thread_pool_[i].join();
+    }
+  }
+
+  thread_pool_.clear();
+}
