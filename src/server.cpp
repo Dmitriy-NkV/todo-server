@@ -66,6 +66,11 @@ server::Server::Server(const std::string& host, unsigned short port, size_t thre
   listener_ = std::move(listener.value());
 }
 
+server::Server::~Server()
+{
+  stop();
+}
+
 void server::Server::start()
 {
   if (running_)
