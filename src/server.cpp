@@ -1,5 +1,10 @@
 #include "server.hpp"
 
+server::Session::Session(tcp::socket&& socket, database::Database& db):
+  stream_(socket),
+  db_(db)
+{}
+
 server::Listener::Listener(net::io_context& ioc, database::Database& db):
   ioc_(ioc),
   acceptor_(net::make_strand(ioc)),
