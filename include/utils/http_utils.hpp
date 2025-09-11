@@ -12,6 +12,8 @@ namespace utils
   http::response< http::string_body > create_error_response(http::status status, const std::string& message);
 
   http::response< http::string_body > create_json_response(http::status status, const nlohmann::json& json);
+
+  std::vector< std::string > parse_parameters(beast::string_view target);
 }
 
 #endif

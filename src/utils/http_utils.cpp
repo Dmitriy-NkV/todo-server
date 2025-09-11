@@ -27,3 +27,18 @@ http::response< http::string_body > utils::create_json_response(http::status sta
   res.prepare_payload();
   return res;
 }
+
+std::vector< std::string > utils::parse_parameters(beast::string_view target)
+{
+  std::vector< std::string > params;
+
+  std::stringstream ss(target);
+  while (ss.good())
+  {
+    std::string substr;
+    std::getline(ss, substr, '/');
+    params.push_back(substr);
+  }
+
+  return params;
+}
