@@ -22,7 +22,7 @@ namespace server
   class Session: public std::enable_shared_from_this< Session >
   {
   public:
-    Session(tcp::socket&& socket, database::Database& db);
+    Session(tcp::socket&& socket, std::shared_ptr< database::Database > db);
 
     void run();
     void do_read();
@@ -35,22 +35,23 @@ namespace server
     beast::tcp_stream stream_;
     beast::flat_buffer buffer_;
     http::request< http::string_body > req_;
-    database::Database& db_;
+    std::shared_ptr< database::Database > db_;
   };
 
   class Listener: public std::enable_shared_from_this< Listener >
   {
   public:
-    static std::expected< std::shared_ptr< Listener >, std::string > create(net::io_context& ioc, tcp::endpoint endpoint, database::Database& db);
+    static std::expected< std::shared_ptr< Listener >, std::string > create(net::io_context& ioc, tcp::endpoint endpoint,
+      std::shared_ptr< database::Database > db);
 
     void run();
 
   private:
     net::io_context& ioc_;
     tcp::acceptor acceptor_;
-    database::Database& db_;
+    std::shared_ptr< database::Database > db_;
 
-    Listener(net::io_context& ioc, database::Database& db);
+    Listener(net::io_context& ioc, std::shared_ptr< database::Database > db);
 
     void do_accept();
     void on_accept(beast::error_code ec, tcp::socket socket);
@@ -59,7 +60,7 @@ namespace server
   class Server
   {
   public:
-    Server(const std::string& host, unsigned short port, size_t threads_num, database::Database& db);
+    Server(const std::string& host, unsigned short port, size_t threads_num, std::shared_ptr< database::Database > db);
     ~Server();
 
     void start();
@@ -74,7 +75,7 @@ namespace server
     net::io_context ioc_;
     std::shared_ptr< Listener > listener_;
     std::vector< std::thread > thread_pool_;
-    database::Database& db_;
+    std::shared_ptr< database::Database > db_;
   };
 }
 

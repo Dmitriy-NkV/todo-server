@@ -1,6 +1,6 @@
 #include "server.hpp"
 
-server::Session::Session(tcp::socket&& socket, database::Database& db):
+server::Session::Session(tcp::socket&& socket, std::shared_ptr< database::Database > db):
   stream_(socket),
   db_(db)
 {}
@@ -36,8 +36,19 @@ void server::Session::on_read(beast::error_code ec, std::size_t bytes_transferre
   if (!handler)
   {
     send_response(std::move(utils::create_error_response(http::status::not_found, "Not found")));
+    return;
   }
-  auto res = handler->handle_request(req_, db_);
+
+  http::response< http::string_body > res;
+  try
+  {
+    res = handler->handle_request(req_, db_);
+  }
+  catch (const std::exception& e)
+  {
+    send_response(std::move(utils::create_error_response(http::status::not_found, e.what())));
+    return;
+  }
 
   send_response(std::move(res));
 }
@@ -71,7 +82,7 @@ void server::Session::do_close()
   stream_.socket().shutdown(tcp::socket::shutdown_send, ec);
 }
 
-server::Listener::Listener(net::io_context& ioc, database::Database& db):
+server::Listener::Listener(net::io_context& ioc, std::shared_ptr< database::Database > db):
   ioc_(ioc),
   acceptor_(net::make_strand(ioc)),
   db_(db)
@@ -102,7 +113,7 @@ void server::Listener::on_accept(beast::error_code ec, tcp::socket socket)
 }
 
 std::expected< std::shared_ptr< server::Listener >, std::string > server::Listener::create(net::io_context& ioc,
-  tcp::endpoint endpoint, database::Database& db)
+  tcp::endpoint endpoint, std::shared_ptr< database::Database > db)
 {
   beast::error_code ec;
   auto listener = std::make_shared< Listener >(ioc, db);
@@ -134,7 +145,7 @@ std::expected< std::shared_ptr< server::Listener >, std::string > server::Listen
   return listener;
 }
 
-server::Server::Server(const std::string& host, unsigned short port, size_t threads_num, database::Database& db):
+server::Server::Server(const std::string& host, unsigned short port, size_t threads_num, std::shared_ptr< database::Database > db):
   host_(host),
   port_(port),
   threads_num_(std::max(static_cast< size_t >(1), threads_num)),
