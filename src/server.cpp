@@ -46,7 +46,7 @@ void server::Session::on_read(beast::error_code ec, std::size_t bytes_transferre
   }
   catch (const std::exception& e)
   {
-    send_response(std::move(utils::create_error_response(http::status::not_found, e.what())));
+    send_response(std::move(utils::create_error_response(http::status::internal_server_error, e.what())));
     return;
   }
 
