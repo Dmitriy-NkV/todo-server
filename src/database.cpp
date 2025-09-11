@@ -234,7 +234,7 @@ void database::Database::update_task(const Task& task)
 
   if (paramIndex == 1)
   {
-    return;
+    throw std::invalid_argument("No fields to update");
   }
 
   params.push_back(std::to_string(task.get_id().value()));
@@ -269,7 +269,7 @@ void database::Database::delete_task(const Task& task)
   PQclear(res);
 }
 
-PGresult* database::Database::execute_query(const std::string& query, const std::vector< std::string >& params)
+PGresult* database::Database::execute_query(const std::string& query, const std::vector< std::string >& params) const
 {
   std::vector< const char* > char_params;
   for (size_t i = 0; i != params.size(); ++i)
