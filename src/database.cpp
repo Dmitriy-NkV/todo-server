@@ -272,7 +272,7 @@ void database::Database::delete_task(const Task& task)
 PGresult* database::Database::execute_query(const std::string& query, const std::vector< const char* >& params)
 {
   PGresult* res = PQexecParams(connection_, query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
-  if (PQresultStatus(res) != PGRES_TUPLES_OK)
+  if (PQresultStatus(res) != PGRES_TUPLES_OK && PQresultStatus(res) != PGRES_COMMAND_OK)
   {
     std::string error = PQerrorMessage(connection_);
     PQclear(res);
