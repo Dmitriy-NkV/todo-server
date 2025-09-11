@@ -153,11 +153,11 @@ void database::Database::create_task(const Task& task)
     )
   )";
 
-  std::vector< const char* > params;
-  params.push_back(task.get_title().value().c_str());
-  params.push_back(task.get_description().value().c_str());
-  params.push_back(task.get_status().value().c_str());
-  params.push_back(std::to_string(std::chrono::duration_cast< std::chrono::seconds >(task.get_created_at().time_since_epoch()).count()).c_str());
+  std::vector< std::string > params;
+  params.push_back(task.get_title().value());
+  params.push_back(task.get_description().value());
+  params.push_back(task.get_status().value());
+  params.push_back(std::to_string(std::chrono::duration_cast< std::chrono::seconds >(task.get_created_at().time_since_epoch()).count()));
 
   PGresult* res = execute_query(create_task_query, params);
   PQclear(res);
@@ -191,8 +191,8 @@ std::optional< database::Task > database::Database::get_task_by_id(const Task& t
     WHERE id = $1
   )";
 
-  std::vector< const char* > params;
-  params.push_back(std::to_string(task.get_id().value()).c_str());
+  std::vector< std::string > params;
+  params.push_back(std::to_string(task.get_id().value()));
 
   PGresult* res = execute_query(get_task_query, params);
 
@@ -211,24 +211,24 @@ std::optional< database::Task > database::Database::get_task_by_id(const Task& t
 void database::Database::update_task(const Task& task)
 {
   std::lock_guard< std::mutex > lock(db_mutex_);
-  std::vector< const char* > params;
+  std::vector< std::string > params;
   std::vector< std::string > setParams;
   size_t paramIndex = 1;
   if (task.get_title() != std::nullopt)
   {
-    params.push_back(task.get_title().value().c_str());
+    params.push_back(task.get_title().value());
     setParams.push_back("title = $" + std::to_string(paramIndex++));
   }
 
   if (task.get_description() != std::nullopt)
   {
-    params.push_back(task.get_description().value().c_str());
+    params.push_back(task.get_description().value());
     setParams.push_back("description = $" + std::to_string(paramIndex++));
   }
 
   if (task.get_status() != std::nullopt)
   {
-    params.push_back(task.get_status().value().c_str());
+    params.push_back(task.get_status().value());
     setParams.push_back("status = $" + std::to_string(paramIndex++));
   }
 
@@ -237,7 +237,7 @@ void database::Database::update_task(const Task& task)
     return;
   }
 
-  params.push_back(std::to_string(task.get_id().value()).c_str());
+  params.push_back(std::to_string(task.get_id().value()));
 
   std::string update_task_query = "UPDATE tasks SET ";
   for (size_t i = 0; i != setParams.size(); ++i)
@@ -262,16 +262,22 @@ void database::Database::delete_task(const Task& task)
     WHERE id = $1
   )";
 
-  std::vector< const char* > params;
-  params.push_back(std::to_string(task.get_id().value()).c_str());
+  std::vector< std::string > params;
+  params.push_back(std::to_string(task.get_id().value()));
 
   PGresult* res = execute_query(delete_task_query, params);
   PQclear(res);
 }
 
-PGresult* database::Database::execute_query(const std::string& query, const std::vector< const char* >& params)
+PGresult* database::Database::execute_query(const std::string& query, const std::vector< std::string >& params)
 {
-  PGresult* res = PQexecParams(connection_, query.c_str(), params.size(), NULL, params.data(), NULL, NULL, 0);
+  std::vector< const char* > char_params;
+  for (size_t i = 0; i != params.size(); ++i)
+  {
+    char_params.push_back(params[i].c_str());
+  }
+
+  PGresult* res = PQexecParams(connection_, query.c_str(), params.size(), NULL, char_params.data(), NULL, NULL, 0);
   if (PQresultStatus(res) != PGRES_TUPLES_OK && PQresultStatus(res) != PGRES_COMMAND_OK)
   {
     std::string error = PQerrorMessage(connection_);
