@@ -1,5 +1,13 @@
 #include "database.hpp"
 
+database::Task::Task(int id):
+  id_(id),
+  title_(),
+  description_(),
+  status_(),
+  created_at_()
+{}
+
 database::Task::Task(int id, std::string title, std::string description, std::string status, std::chrono::system_clock::time_point created_at):
   id_(id),
   title_(title),

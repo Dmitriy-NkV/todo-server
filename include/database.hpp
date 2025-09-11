@@ -34,6 +34,7 @@ namespace database
 
   public:
     Task() = default;
+    Task(int id);
     Task(int id, std::string title, std::string description, std::string status, std::chrono::system_clock::time_point created_at);
     ~Task() = default;
 
