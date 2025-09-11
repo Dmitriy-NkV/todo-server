@@ -17,8 +17,25 @@ http::response< http::string_body > handlers::PutTaskHandler::handle_request(con
   }
 
   database::Task task;
-  nlohmann::json json(req.body());
-  database::from_json(json, task);
+
+  try
+  {
+    nlohmann::json json = nlohmann::json::parse(req.body());
+    database::from_json(json, task);
+  }
+  catch (const nlohmann::json::parse_error&)
+  {
+    return utils::create_error_response(http::status::bad_request, "Wrong JSON format");
+  }
+  catch (const std::exception& e)
+  {
+    return utils::create_error_response(http::status::bad_request, e.what());
+  }
+
+  if (!task.get_id())
+  {
+    return utils::create_error_response(http::status::bad_request, "Wrong id");
+  }
 
   try
   {

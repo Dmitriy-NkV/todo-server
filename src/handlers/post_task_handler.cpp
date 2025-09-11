@@ -17,8 +17,37 @@ http::response< http::string_body > handlers::PostTaskHandler::handle_request(co
   }
 
   database::Task task;
-  nlohmann::json json(req.body());
-  database::from_json(json, task);
+
+  try
+  {
+    nlohmann::json json = nlohmann::json::parse(req.body());
+    database::from_json(json, task);
+  }
+  catch (const nlohmann::json::parse_error&)
+  {
+    return utils::create_error_response(http::status::bad_request, "Wrong JSON format");
+  }
+  catch (const std::exception& e)
+  {
+    return utils::create_error_response(http::status::bad_request, e.what());
+  }
+
+  if (task.get_id())
+  {
+    return utils::create_error_response(http::status::bad_request, "Wrong id");
+  }
+  else if (!task.get_title() || task.get_title()->empty())
+  {
+    return utils::create_error_response(http::status::bad_request, "Wrong title");
+  }
+  else if (!task.get_status() || task.get_status()->empty())
+  {
+    return utils::create_error_response(http::status::bad_request, "Wrong status");
+  }
+  else if (task.get_status() != "In progress" || task.get_status() != "Completed")
+  {
+    return utils::create_error_response(http::status::bad_request, "Status must be 'In progress' or 'Completed'");
+  }
 
   try
   {
