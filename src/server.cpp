@@ -1,7 +1,7 @@
 #include "server.hpp"
 
 server::Session::Session(tcp::socket&& socket, std::shared_ptr< database::Database > db):
-  stream_(socket),
+  stream_(std::move(socket)),
   db_(db)
 {}
 

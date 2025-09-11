@@ -41,6 +41,7 @@ namespace server
   class Listener: public std::enable_shared_from_this< Listener >
   {
   public:
+    Listener(net::io_context& ioc, std::shared_ptr< database::Database > db);
     static std::expected< std::shared_ptr< Listener >, std::string > create(net::io_context& ioc, tcp::endpoint endpoint,
       std::shared_ptr< database::Database > db);
 
@@ -50,8 +51,6 @@ namespace server
     net::io_context& ioc_;
     tcp::acceptor acceptor_;
     std::shared_ptr< database::Database > db_;
-
-    Listener(net::io_context& ioc, std::shared_ptr< database::Database > db);
 
     void do_accept();
     void on_accept(beast::error_code ec, tcp::socket socket);
