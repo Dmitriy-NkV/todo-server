@@ -32,7 +32,8 @@ std::vector< std::string > utils::parse_parameters(beast::string_view target)
 {
   std::vector< std::string > params;
 
-  std::stringstream ss(target);
+  std::string target_str(target);
+  std::stringstream ss(target_str);
   while (ss.good())
   {
     std::string substr;
