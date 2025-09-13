@@ -10,7 +10,7 @@ namespace handlers
   public:
     bool can_handle(const http::request< http::string_body >& req) const override;
     http::response< http::string_body > handle_request(const http::request< http::string_body >& req,
-      std::shared_ptr< database::Database > db) override;
+    std::shared_ptr< database::Database > db) override;
     std::unique_ptr< RequestHandler > create() const override;
   };
 }
