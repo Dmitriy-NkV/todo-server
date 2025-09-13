@@ -3,7 +3,8 @@
 
 bool handlers::DeleteTaskHandler::can_handle(const http::request< http::string_body >& req) const
 {
-  return req.method() == http::verb::delete_ && req.target().starts_with("/delete");
+  auto params = utils::parse_parameters(req.target());
+  return req.method() == http::verb::delete_ && params.size() >= 2 && params[1] == "task";
 }
 
 http::response< http::string_body > handlers::DeleteTaskHandler::handle_request(const http::request< http::string_body >& req,
@@ -14,9 +15,9 @@ http::response< http::string_body > handlers::DeleteTaskHandler::handle_request(
   int id = 0;
   try
   {
-    if (params.size() == 2)
+    if (params.size() == 3)
     {
-      id = std::stoi(params[1]);
+      id = std::stoi(params[2]);
     }
     else
     {

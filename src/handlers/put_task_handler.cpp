@@ -3,7 +3,8 @@
 
 bool handlers::PutTaskHandler::can_handle(const http::request< http::string_body >& req) const
 {
-  return req.method() == http::verb::put && req.target().starts_with("/task");
+  auto params = utils::parse_parameters(req.target());
+  return req.method() == http::verb::put && params.size() >= 2 && params[1] == "task";
 }
 
 http::response< http::string_body > handlers::PutTaskHandler::handle_request(const http::request< http::string_body >& req,
@@ -11,7 +12,7 @@ http::response< http::string_body > handlers::PutTaskHandler::handle_request(con
 {
   std::vector< std::string > params = utils::parse_parameters(req.target());
 
-  if (params.size() != 1)
+  if (params.size() != 2)
   {
     return utils::create_error_response(http::status::bad_request, "Wrong parameters");
   }
