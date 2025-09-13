@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(FetchContent)
 
-find_package(Boost 1.83.0 REQUIRED)
+find_package(Boost 1.75.0 REQUIRED)
 find_package(PostgreSQL REQUIRED)
 
 FetchContent_Declare(nlohmann_json
