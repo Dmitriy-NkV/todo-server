@@ -5,6 +5,7 @@
 #include <iostream>
 #include <format>
 #include <chrono>
+#include <mutex>
 
 namespace logger
 {
@@ -27,7 +28,9 @@ namespace logger
     void log(LogLevel level, const std::string& message);
 
   private:
-    constexpr std::string level_to_string(LogLevel level);
+    std::mutex log_mutex_;
+
+    constexpr std::string_view level_to_string(LogLevel level);
   };
 }
 
