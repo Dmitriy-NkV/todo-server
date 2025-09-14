@@ -16,6 +16,14 @@ FetchContent_Declare(nlohmann_json
 )
 FetchContent_MakeAvailable(nlohmann_json)
 
+FetchContent_Declare(googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG v1.17.0
+)
+FetchContent_MakeAvailable(googletest)
+
+add_library(GTest::GTest INTERFACE IMPORTED)
+
 add_executable(server
   src/main.cpp
   src/server.cpp
@@ -35,11 +43,13 @@ target_include_directories(server PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/include/utils
   ${Boost_INCLUDE_DIRS}
   ${PostgreSQL_INCLUDE_DIRS}
+  ${GTest_INCLUDE_DIRS}
 )
 
 target_link_libraries(server PRIVATE
   Boost::boost
   PostgreSQL::PostgreSQL
   nlohmann_json::nlohmann_json
+  GTest::GTest
   pthread
 )
