@@ -12,7 +12,8 @@ void server::Session::run()
 
 void server::Session::do_read()
 {
-  req_.clear();
+  req_ = {};
+  buffer_.consume(buffer_.size());
   stream_.expires_after(std::chrono::seconds(30));
 
   http::async_read(stream_, buffer_, req_, beast::bind_front_handler(&Session::on_read, shared_from_this()));
@@ -67,6 +68,8 @@ void server::Session::on_write(bool keep_alive, beast::error_code ec, std::size_
   {
     return;
   }
+
+  buffer_.consume(buffer_.size());
 
   if (!keep_alive)
   {
