@@ -29,6 +29,7 @@ add_executable(server
   src/server.cpp
   src/database.cpp
   src/handler_factory.cpp
+  src/logger.cpp
   src/utils/http_utils.cpp
   src/handlers/delete_task_handler.cpp
   src/handlers/get_task_handler.cpp
