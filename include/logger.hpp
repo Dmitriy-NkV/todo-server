@@ -27,7 +27,7 @@ namespace logger
     void log(LogLevel level, const std::string& message);
 
   private:
-    std::string level_to_string(LogLevel level);
+    constexpr std::string level_to_string(LogLevel level);
   };
 }
 

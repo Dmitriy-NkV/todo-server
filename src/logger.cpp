@@ -14,7 +14,7 @@ void logger::Logger::log(LogLevel level, const std::string& message)
   std::cout << std::format("[{}] [{}]: {}\n", formatted_time, level_to_string(level), message);
 }
 
-std::string logger::Logger::level_to_string(LogLevel level)
+constexpr std::string logger::Logger::level_to_string(LogLevel level)
 {
   switch (level)
   {
@@ -25,10 +25,10 @@ std::string logger::Logger::level_to_string(LogLevel level)
     case LogLevel::WARNING:
       return "WARNING";
     case LogLevel::ERROR:
-      return"ERROR";
+      return "ERROR";
     case LogLevel::CRITICAL:
       return "CRITICAL";
     default:
-      return"UNKNOWN";
+      return "UNKNOWN";
   }
 }
