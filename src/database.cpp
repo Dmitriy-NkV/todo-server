@@ -262,27 +262,27 @@ void database::Database::update_task(const Task& task)
   {
     pqxx::work txn(*connection_);
 
-    bool isUpdated = false;
+    bool is_updated = false;
 
     if (auto title = task.get_title())
     {
-      isUpdated = true;
+      is_updated = true;
       current_task.set_title(title.value());
     }
 
     if (auto description = task.get_description())
     {
-      isUpdated = true;
+      is_updated = true;
       current_task.set_description(description.value());
     }
 
     if (auto status = task.get_status())
     {
-      isUpdated = true;
+      is_updated = true;
       current_task.set_status(status.value());
     }
 
-    if (!isUpdated)
+    if (!is_updated)
     {
       throw std::invalid_argument("Nothing to update");
     }
