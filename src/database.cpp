@@ -192,7 +192,6 @@ int database::Database::create_task(const Task& task)
 
 std::vector< database::Task > database::Database::get_all_tasks()
 {
-  std::lock_guard< std::mutex > lock(db_mutex_);
   std::vector< Task > tasks;
 
   try
@@ -219,8 +218,6 @@ std::vector< database::Task > database::Database::get_all_tasks()
 
 std::optional< database::Task > database::Database::get_task_by_id(int id)
 {
-  std::lock_guard< std::mutex > lock(db_mutex_);
-
   try
   {
     pqxx::read_transaction txn(*connection_);
@@ -266,7 +263,6 @@ void database::Database::update_task(const Task& task)
     pqxx::work txn(*connection_);
 
     bool isUpdated = false;
-    std::vector< std::string > params;
 
     if (auto title = task.get_title())
     {
@@ -291,14 +287,15 @@ void database::Database::update_task(const Task& task)
       throw std::invalid_argument("Nothing to update");
     }
 
-    params.push_back(current_task.get_title().value());
-    params.push_back(current_task.get_description().value());
-    params.push_back(current_task.get_status().value());
-    params.push_back(std::to_string(id));
-
-    std::string query = "UPDATE tasks SET title = $1, description = $2, status = $3 WHERE id = $4";
-
-    txn.exec(query, params);
+    txn.exec(
+      "UPDATE tasks SET title = $1, description = $2, status = $3 WHERE id = $4",
+      pqxx::params {
+        current_task.get_title().value(),
+        current_task.get_description().value(),
+        current_task.get_status().value(),
+        id
+      }
+    );
     txn.commit();
   }
   catch (const pqxx::sql_error& e)
