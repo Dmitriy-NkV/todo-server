@@ -1,18 +1,18 @@
 #include "http_utils.hpp"
 
-http::response< http::string_body > utils::create_error_response(http::status status, const std::string& message)
+http::response< http::string_body > utils::create_response(http::status status, bool is_error, const std::string& message)
 {
   http::response<http::string_body> res(status, 11);
   res.set(http::field::content_type, "application/json");
   res.set(http::field::access_control_allow_origin, "*");
 
-  nlohmann::json error_json = {
-    { "error", true },
+  nlohmann::json json = {
+    { "error", is_error },
     { "message", message },
     { "status", static_cast< int >(status) }
   };
 
-  res.body() = error_json.dump();
+  res.body() = json.dump();
   res.prepare_payload();
   return res;
 }
