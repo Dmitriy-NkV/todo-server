@@ -14,7 +14,7 @@ http::response< http::string_body > handlers::GetTasksHandler::handle_request(co
 
   if (params.size() != 2)
   {
-    return utils::create_error_response(http::status::bad_request, "Wrong parameters");
+    return utils::create_response(http::status::bad_request, true, "Wrong parameters");
   }
 
   nlohmann::json json;
@@ -24,7 +24,7 @@ http::response< http::string_body > handlers::GetTasksHandler::handle_request(co
   }
   catch (const std::exception& e)
   {
-    return utils::create_error_response(http::status::internal_server_error, e.what());
+    return utils::create_response(http::status::internal_server_error, true, e.what());
   }
 
   return utils::create_json_response(http::status::ok, json);

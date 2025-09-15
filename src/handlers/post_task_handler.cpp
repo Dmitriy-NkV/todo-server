@@ -14,7 +14,7 @@ http::response< http::string_body > handlers::PostTaskHandler::handle_request(co
 
   if (params.size() != 2)
   {
-    return utils::create_error_response(http::status::bad_request, "Wrong parameters");
+    return utils::create_response(http::status::bad_request, true, "Wrong parameters");
   }
 
   database::Task task;
@@ -26,40 +26,42 @@ http::response< http::string_body > handlers::PostTaskHandler::handle_request(co
   }
   catch (const nlohmann::json::parse_error&)
   {
-    return utils::create_error_response(http::status::bad_request, "Wrong JSON format");
+    return utils::create_response(http::status::bad_request, true, "Wrong JSON format");
   }
   catch (const std::exception& e)
   {
-    return utils::create_error_response(http::status::bad_request, e.what());
+    return utils::create_response(http::status::bad_request, true, e.what());
   }
 
   if (task.get_id())
   {
-    return utils::create_error_response(http::status::bad_request, "Wrong id");
+    return utils::create_response(http::status::bad_request, true, "Wrong id");
   }
   else if (!task.get_title() || task.get_title()->empty())
   {
-    return utils::create_error_response(http::status::bad_request, "Wrong title");
+    return utils::create_response(http::status::bad_request, true, "Wrong title");
   }
   else if (!task.get_status() || task.get_status()->empty())
   {
-    return utils::create_error_response(http::status::bad_request, "Wrong status");
+    return utils::create_response(http::status::bad_request, true, "Wrong status");
   }
   else if (task.get_status() != "In progress" && task.get_status() != "Completed")
   {
-    return utils::create_error_response(http::status::bad_request, "Status must be 'In progress' or 'Completed'");
+    return utils::create_response(http::status::bad_request, true, "Status must be 'In progress' or 'Completed'");
   }
+
+  int id = 0;
 
   try
   {
-    db->create_task(task);
+    id = db->create_task(task);
   }
   catch (const std::exception& e)
   {
-    return utils::create_error_response(http::status::internal_server_error, e.what());
+    return utils::create_response(http::status::internal_server_error, true, e.what());
   }
 
-  return utils::create_json_response(http::status::created, "Created");
+  return utils::create_response(http::status::created, false, std::format("Id = {}", id));
 }
 
 std::unique_ptr< handlers::RequestHandler > handlers::PostTaskHandler::create() const

@@ -40,7 +40,7 @@ void server::Session::on_read(beast::error_code ec, std::size_t bytes_transferre
   {
     log_connection_error("reading", "Method not found");
 
-    send_response(std::move(utils::create_error_response(http::status::not_found, "Not found")));
+    send_response(std::move(utils::create_response(http::status::not_found, true, "Not found")));
     return;
   }
 
@@ -53,7 +53,7 @@ void server::Session::on_read(beast::error_code ec, std::size_t bytes_transferre
   {
     log_connection_error("handling", e.what());
 
-    send_response(std::move(utils::create_error_response(http::status::internal_server_error, e.what())));
+    send_response(std::move(utils::create_response(http::status::internal_server_error, true, e.what())));
     return;
   }
 

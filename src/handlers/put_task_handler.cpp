@@ -14,7 +14,7 @@ http::response< http::string_body > handlers::PutTaskHandler::handle_request(con
 
   if (params.size() != 2)
   {
-    return utils::create_error_response(http::status::bad_request, "Wrong parameters");
+    return utils::create_response(http::status::bad_request, true, "Wrong parameters");
   }
 
   database::Task task;
@@ -26,16 +26,16 @@ http::response< http::string_body > handlers::PutTaskHandler::handle_request(con
   }
   catch (const nlohmann::json::parse_error&)
   {
-    return utils::create_error_response(http::status::bad_request, "Wrong JSON format");
+    return utils::create_response(http::status::bad_request, true, "Wrong JSON format");
   }
   catch (const std::exception& e)
   {
-    return utils::create_error_response(http::status::bad_request, e.what());
+    return utils::create_response(http::status::bad_request, true, e.what());
   }
 
   if (!task.get_id())
   {
-    return utils::create_error_response(http::status::bad_request, "Wrong id");
+    return utils::create_response(http::status::bad_request, true, "Wrong id");
   }
 
   try
@@ -44,10 +44,10 @@ http::response< http::string_body > handlers::PutTaskHandler::handle_request(con
   }
   catch (const std::exception& e)
   {
-    return utils::create_error_response(http::status::internal_server_error, e.what());
+    return utils::create_response(http::status::internal_server_error, true, e.what());
   }
 
-  return utils::create_json_response(http::status::accepted, "Updated");
+  return utils::create_response(http::status::accepted, false, "Updated");
 }
 
 std::unique_ptr< handlers::RequestHandler > handlers::PutTaskHandler::create() const

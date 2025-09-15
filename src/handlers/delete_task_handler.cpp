@@ -26,11 +26,11 @@ http::response< http::string_body > handlers::DeleteTaskHandler::handle_request(
   }
   catch (const std::invalid_argument& e)
   {
-    return utils::create_error_response(http::status::bad_request, "Wrong id");
+    return utils::create_response(http::status::bad_request, true, "Wrong id");
   }
   catch (const std::exception& e)
   {
-    return utils::create_error_response(http::status::bad_request, e.what());
+    return utils::create_response(http::status::bad_request, true, e.what());
   }
 
   database::Task task(id);
@@ -41,10 +41,10 @@ http::response< http::string_body > handlers::DeleteTaskHandler::handle_request(
   }
   catch (const std::exception& e)
   {
-    return utils::create_error_response(http::status::internal_server_error, e.what());
+    return utils::create_response(http::status::internal_server_error, true, e.what());
   }
 
-  return utils::create_json_response(http::status::accepted, "Deleted");
+  return utils::create_response(http::status::accepted, false, "Deleted");
 }
 
 std::unique_ptr< handlers::RequestHandler > handlers::DeleteTaskHandler::create() const
