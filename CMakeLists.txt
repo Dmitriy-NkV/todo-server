@@ -8,7 +8,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 include(FetchContent)
 
 find_package(Boost 1.75.0 REQUIRED)
-find_package(PostgreSQL REQUIRED)
+
+FetchContent_Declare(libpqxx
+  GIT_REPOSITORY https://github.com/jtv/libpqxx.git
+  GIT_TAG 7.7.5
+)
+FetchContent_MakeAvailable(libpqxx)
 
 FetchContent_Declare(nlohmann_json
   GIT_REPOSITORY https://github.com/nlohmann/json.git
@@ -43,14 +48,13 @@ target_include_directories(server PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/include/handlers
   ${CMAKE_CURRENT_SOURCE_DIR}/include/utils
   ${Boost_INCLUDE_DIRS}
-  ${PostgreSQL_INCLUDE_DIRS}
   ${GTest_INCLUDE_DIRS}
 )
 
 target_link_libraries(server PRIVATE
   Boost::boost
-  PostgreSQL::PostgreSQL
   nlohmann_json::nlohmann_json
   GTest::GTest
+  pqxx
   pthread
 )
