@@ -37,7 +37,7 @@ http::response< http::string_body > handlers::DeleteTaskHandler::handle_request(
 
   try
   {
-    db->delete_task(task);
+    db->delete_task(id);
   }
   catch (const std::exception& e)
   {
