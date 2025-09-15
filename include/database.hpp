@@ -75,7 +75,8 @@ namespace database
     std::mutex db_mutex_;
 
     PGresult* execute_query(const std::string& query, const std::vector< std::string >& params) const;
-    Task result_to_task(const PGresult* res, size_t row);
+    Task result_to_task(const PGresult* res, size_t row) const;
+    bool check_id(const Task& task) const;
   };
 }
 

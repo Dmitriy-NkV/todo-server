@@ -204,6 +204,12 @@ std::vector< database::Task > database::Database::get_all_tasks()
 std::optional< database::Task > database::Database::get_task_by_id(const Task& task)
 {
   std::lock_guard< std::mutex > lock(db_mutex_);
+
+  if (!check_id(task))
+  {
+    throw std::runtime_error("Task with id " + std::to_string(task.get_id().value()) + " does not exist");
+  }
+
   std::string get_task_query = R"(
     SELECT id, title, description, status, created_at FROM tasks
     WHERE id = $1
@@ -229,6 +235,12 @@ std::optional< database::Task > database::Database::get_task_by_id(const Task& t
 void database::Database::update_task(const Task& task)
 {
   std::lock_guard< std::mutex > lock(db_mutex_);
+
+  if (!check_id(task))
+  {
+    throw std::runtime_error("Task with id " + std::to_string(task.get_id().value()) + " does not exist");
+  }
+
   std::vector< std::string > params;
   std::vector< std::string > setParams;
   size_t paramIndex = 1;
@@ -275,6 +287,12 @@ void database::Database::update_task(const Task& task)
 void database::Database::delete_task(const Task& task)
 {
   std::lock_guard< std::mutex > lock(db_mutex_);
+
+  if (!check_id(task))
+  {
+    throw std::runtime_error("Task with id " + std::to_string(task.get_id().value()) + " does not exist");
+  }
+
   std::string delete_task_query = R"(
     DELETE FROM tasks
     WHERE id = $1
@@ -283,8 +301,8 @@ void database::Database::delete_task(const Task& task)
   std::vector< std::string > params;
   params.push_back(std::to_string(task.get_id().value()));
 
-  PGresult* res = execute_query(delete_task_query, params);
-  PQclear(res);
+  PGresult* delete_res = execute_query(delete_task_query, params);
+  PQclear(delete_res);
 }
 
 PGresult* database::Database::execute_query(const std::string& query, const std::vector< std::string >& params) const
@@ -305,7 +323,7 @@ PGresult* database::Database::execute_query(const std::string& query, const std:
   return res;
 }
 
-database::Task database::Database::result_to_task(const PGresult* res, size_t row)
+database::Task database::Database::result_to_task(const PGresult* res, size_t row) const
 {
   int id = std::stoi(PQgetvalue(res, row, 0));
   std::string title = PQgetvalue(res, row, 1);
@@ -314,4 +332,39 @@ database::Task database::Database::result_to_task(const PGresult* res, size_t ro
   std::chrono::system_clock::time_point created_at = std::chrono::system_clock::time_point(std::chrono::seconds(std::stoll(PQgetvalue(res, row, 4))));
 
   return Task(id, title, description, status, created_at);
+}
+
+bool database::Database::check_id(const Task& task) const
+{
+  std::string check_task_query = R"(SELECT EXISTS(
+    SELECT 1 FROM tasks
+    WHERE id = $1)
+  )";
+
+  std::vector< std::string > params;
+  params.push_back(std::to_string(task.get_id().value()));
+
+  PGresult* check_res = execute_query(check_task_query, params);
+
+  if (check_res && PQntuples(check_res) > 0)
+  {
+    char* exists_str = PQgetvalue(check_res, 0, 0);
+    bool task_exists = (exists_str[0] == 't');
+
+    PQclear(check_res);
+
+    if (!task_exists)
+    {
+      return false;
+    }
+    else
+    {
+      return true;
+    }
+  }
+  else
+  {
+    PQclear(check_res);
+    throw std::runtime_error("Failed to check task existence");
+  }
 }
