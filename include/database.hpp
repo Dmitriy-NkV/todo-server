@@ -44,6 +44,10 @@ namespace database
     std::optional< std::string > get_status() const;
     std::chrono::system_clock::time_point get_created_at() const;
 
+    void set_title(const std::string& title);
+    void set_description(const std::string& description);
+    void set_status(const std::string& status);
+
   private:
     std::optional< int > id_;
     std::optional< std::string > title_;
@@ -61,7 +65,7 @@ namespace database
     Database(const std::string& connection_string);
     ~Database() = default;
 
-    void create_task(const Task& task);
+    int create_task(const Task& task);
     std::vector< Task > get_all_tasks();
     std::optional< Task > get_task_by_id(int id);
     void update_task(const Task& task);

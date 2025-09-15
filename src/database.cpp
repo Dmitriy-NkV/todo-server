@@ -42,6 +42,21 @@ std::chrono::system_clock::time_point database::Task::get_created_at() const
   return created_at_;
 }
 
+void database::Task::set_title(const std::string& title)
+{
+  title_ = title;
+}
+
+void database::Task::set_description(const std::string& description)
+{
+  description_ = description;
+}
+
+void database::Task::set_status(const std::string& status)
+{
+  status_ = status;
+}
+
 void database::to_json(nlohmann::json& j, const Task& t)
 {
   auto time_t = std::chrono::system_clock::to_time_t(t.created_at_);
@@ -81,10 +96,11 @@ void database::from_json(const nlohmann::json& j, Task& t)
     std::string time_str = j["created_at"];
     std::tm tm = {};
     std::istringstream iss(time_str);
+
     iss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%SZ");
     if (!iss.fail())
     {
-      t.created_at_ = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+      t.created_at_ = std::chrono::system_clock::from_time_t(timegm(&tm));
     }
     else
     {
@@ -99,21 +115,8 @@ void database::from_json(const nlohmann::json& j, Task& t)
 
 database::Database::Database(const std::string& connection_string):
   connection_string_(connection_string),
-  connection_()
-{
-  try
-  {
-    connection_ = std::make_unique<pqxx::connection>(connection_string_);
-  }
-  catch (const pqxx::sql_error& e)
-  {
-    throw std::runtime_error(e.what());
-  }
-  catch (const std::exception& e)
-  {
-    throw std::runtime_error(e.what());
-  }
-}
+  connection_(std::make_unique< pqxx::connection >(connection_string_))
+{}
 
 void database::Database::initialize_database()
 {
@@ -156,14 +159,14 @@ void database::Database::initialize_database()
   }
 }
 
-void database::Database::create_task(const Task& task)
+int database::Database::create_task(const Task& task)
 {
   std::lock_guard< std::mutex > lock(db_mutex_);
   try
   {
     pqxx::work txn(*connection_);
 
-    auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(
+    auto timestamp = std::chrono::duration_cast< std::chrono::seconds >(
       task.get_created_at().time_since_epoch()).count();
 
     auto result = txn.exec_params(
@@ -177,6 +180,7 @@ void database::Database::create_task(const Task& task)
     );
 
     txn.commit();
+    return result[0][0].as< int >();
   }
   catch (const pqxx::sql_error& e)
   {
@@ -187,7 +191,7 @@ void database::Database::create_task(const Task& task)
 std::vector< database::Task > database::Database::get_all_tasks()
 {
   std::lock_guard< std::mutex > lock(db_mutex_);
-  std::vector<Task> tasks;
+  std::vector< Task > tasks;
 
   try
   {
@@ -244,53 +248,51 @@ void database::Database::update_task(const Task& task)
 
   int id = task.get_id().value();
 
-  if (!check_id_exists(id))
+  auto current_task_opt = get_task_by_id(id);
+
+  if (!current_task_opt.has_value())
   {
     throw std::runtime_error("Task with id " + std::to_string(id) + " does not exist");
   }
+
+  auto current_task = current_task_opt.value();
 
   try
   {
     pqxx::work txn(*connection_);
 
-    std::vector<std::string> set_clauses;
-    std::vector<std::string> params;
+    bool isUpdated = false;
+    std::vector< std::string > params;
 
-    if (task.get_title().has_value())
+    if (auto title = task.get_title())
     {
-      set_clauses.push_back("title = $" + std::to_string(params.size() + 1));
-      params.push_back(task.get_title().value());
+      isUpdated = true;
+      current_task.set_title(title.value());
     }
 
-    if (task.get_description().has_value())
+    if (auto description = task.get_description())
     {
-      set_clauses.push_back("description = $" + std::to_string(params.size() + 1));
-      params.push_back(task.get_description().value());
+      isUpdated = true;
+      current_task.set_description(description.value());
     }
 
-    if (task.get_status().has_value())
+    if (auto status = task.get_status())
     {
-      set_clauses.push_back("status = $" + std::to_string(params.size() + 1));
-      params.push_back(task.get_status().value());
+      isUpdated = true;
+      current_task.set_status(status.value());
     }
 
-    if (set_clauses.empty())
+    if (!isUpdated)
     {
-      throw std::invalid_argument("No fields to update");
+      throw std::invalid_argument("Nothing to update");
     }
 
+    params.push_back(current_task.get_title().value());
+    params.push_back(current_task.get_description().value());
+    params.push_back(current_task.get_status().value());
     params.push_back(std::to_string(id));
 
-    std::string query = "UPDATE tasks SET ";
-    for (size_t i = 0; i != set_clauses.size(); ++i)
-    {
-      if (i != 0)
-      {
-        query += ", ";
-      }
-      query += set_clauses[i];
-    }
-    query += " WHERE id = $" + std::to_string(params.size());
+    std::string query = "UPDATE tasks SET title = $1, description = $2, status = $3 WHERE id = $4";
 
     txn.exec_params(query, params);
     txn.commit();
@@ -303,7 +305,7 @@ void database::Database::update_task(const Task& task)
 
 void database::Database::delete_task(int id)
 {
-  std::lock_guard<std::mutex> lock(db_mutex_);
+  std::lock_guard< std::mutex > lock(db_mutex_);
 
   if (!check_id_exists(id))
   {
