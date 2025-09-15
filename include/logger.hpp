@@ -35,6 +35,6 @@ namespace logger
 }
 
 #define LOG(level, message) \
-  logger::Logger::getInstance().log(level, message);
+  logger::Logger::get_instance().log(level, message);
 
 #endif

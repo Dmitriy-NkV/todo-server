@@ -11,8 +11,7 @@ void logger::Logger::log(LogLevel level, const std::string& message)
   std::lock_guard< std::mutex > lock(log_mutex_);
 
   auto now = std::chrono::system_clock::now();
-  auto time = std::chrono::system_clock::to_time_t(now);
-  std::string formatted_time = std::format("{:%Y-%m-%d %H:%M:%S}", *std::localtime(&time));
+  std::string formatted_time = std::format("{:%Y-%m-%d %H:%M:%S}", now);
   std::cout << std::format("[{}] [{}]: {}\n", formatted_time, level_to_string(level), message);
 }
 
