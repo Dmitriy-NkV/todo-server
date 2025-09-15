@@ -123,10 +123,8 @@ void server::Session::log_connection_error(const std::string& context, boost::be
   std::string log_message;
   if (ec == beast::error::timeout)
   {
-    log_message = std::format("Timeout in {} - Method: {} Target: {}",
-      context,
-      std::string(req_.method_string()),
-      std::string(req_.target())
+    log_message = std::format("Timeout in {}",
+      context
     );
 
     LOG(logger::LogLevel::WARNING, log_message);
