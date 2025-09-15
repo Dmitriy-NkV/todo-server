@@ -2,7 +2,7 @@
 #define DATABASE_HPP
 
 #include <nlohmann/json.hpp>
-#include <postgresql/libpq-fe.h>
+#include <pqxx/pqxx>
 #include <string>
 #include <chrono>
 
@@ -59,24 +59,23 @@ namespace database
   {
   public:
     Database(const std::string& connection_string);
-    ~Database();
+    ~Database() = default;
 
     void create_task(const Task& task);
     std::vector< Task > get_all_tasks();
-    std::optional< Task > get_task_by_id(const Task& task);
+    std::optional< Task > get_task_by_id(int id);
     void update_task(const Task& task);
-    void delete_task(const Task& task);
+    void delete_task(int id);
 
     void initialize_database();
 
   private:
     std::string connection_string_;
-    PGconn* connection_;
+    std::unique_ptr<pqxx::connection> connection_;
     std::mutex db_mutex_;
 
-    PGresult* execute_query(const std::string& query, const std::vector< std::string >& params) const;
-    Task result_to_task(const PGresult* res, size_t row) const;
-    bool check_id(const Task& task) const;
+    Task row_to_task(const pqxx::row& row) const;
+    bool check_id_exists(int id) const;
   };
 }
 
