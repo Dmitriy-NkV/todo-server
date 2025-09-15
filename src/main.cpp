@@ -28,8 +28,6 @@ int main()
     server::Server server(server_host, server_port, threads_num, db);
     server.start();
 
-    std::cout << "Server started" << '\n';
-
     std::string line;
     while (std::getline(std::cin, line))
     {
@@ -39,13 +37,12 @@ int main()
       }
     }
 
-    std::cout << "Server stoped" << '\n';
-
     server.stop();
   }
   catch (const std::exception& e)
   {
-    std::cerr << "Error: " << e.what() << '\n';
+    std::string error = e.what();
+    LOG(logger::LogLevel::CRITICAL, "App error: " + error + '\n');
     return 1;
   }
 
