@@ -78,7 +78,7 @@ namespace server
 
     net::io_context ioc_;
     std::shared_ptr< Listener > listener_;
-    std::vector< std::thread > thread_pool_;
+    std::vector< std::jthread > thread_pool_;
     std::shared_ptr< database::Database > db_;
   };
 }

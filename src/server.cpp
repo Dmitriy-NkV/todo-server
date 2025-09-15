@@ -259,21 +259,16 @@ void server::Server::stop()
 {
   if (!running_)
   {
-    LOG(logger::LogLevel::INFO, "Server already stoped");
+    LOG(logger::LogLevel::INFO, "Server already stopped");
     return;
   }
   running_ = false;
 
   ioc_.stop();
-  for (size_t i = 0; i != threads_num_; ++i)
-  {
-    if (thread_pool_[i].joinable())
-    {
-      thread_pool_[i].join();
-    }
-  }
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   thread_pool_.clear();
 
-  LOG(logger::LogLevel::INFO, "Server stoped");
+  LOG(logger::LogLevel::INFO, "Server stopped");
 }
