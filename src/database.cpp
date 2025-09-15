@@ -43,12 +43,17 @@ std::chrono::system_clock::time_point database::Task::get_created_at() const
 
 void database::to_json(nlohmann::json& j, const Task& t)
 {
+  auto time_t = std::chrono::system_clock::to_time_t(t.created_at_);
+  std::tm tm = *std::gmtime(&time_t);
+  std::ostringstream oss;
+  oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+
   j = nlohmann::json{
     { "id", t.id_.value() },
     { "title", t.title_.value() },
     { "description", t.description_.value() },
     { "status", t.status_.value() },
-    { "created_at", t.created_at_ }
+    { "created_at", oss.str() }
   };
 }
 
@@ -72,7 +77,18 @@ void database::from_json(const nlohmann::json& j, Task& t)
   }
   if (j.contains("created_at"))
   {
-    t.created_at_ = j["created_at"];
+    std::string time_str = j["created_at"];
+    std::tm tm = {};
+    std::istringstream iss(time_str);
+    iss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%SZ");
+    if (!iss.fail())
+    {
+      t.created_at_ = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+    }
+    else
+    {
+      throw std::runtime_error("Invalid date format");
+    }
   }
   else
   {
@@ -153,11 +169,13 @@ void database::Database::create_task(const Task& task)
     )
   )";
 
+  auto timestamp = std::chrono::duration_cast< std::chrono::seconds >(task.get_created_at().time_since_epoch()).count();
+
   std::vector< std::string > params;
   params.push_back(task.get_title().value());
   params.push_back(task.get_description().value());
   params.push_back(task.get_status().value());
-  params.push_back(std::to_string(std::chrono::duration_cast< std::chrono::seconds >(task.get_created_at().time_since_epoch()).count()));
+  params.push_back(std::to_string(timestamp));
 
   PGresult* res = execute_query(create_task_query, params);
   PQclear(res);
@@ -214,19 +232,19 @@ void database::Database::update_task(const Task& task)
   std::vector< std::string > params;
   std::vector< std::string > setParams;
   size_t paramIndex = 1;
-  if (task.get_title() != std::nullopt)
+  if (task.get_title().has_value())
   {
     params.push_back(task.get_title().value());
     setParams.push_back("title = $" + std::to_string(paramIndex++));
   }
 
-  if (task.get_description() != std::nullopt)
+  if (task.get_description().has_value())
   {
     params.push_back(task.get_description().value());
     setParams.push_back("description = $" + std::to_string(paramIndex++));
   }
 
-  if (task.get_status() != std::nullopt)
+  if (task.get_status().has_value())
   {
     params.push_back(task.get_status().value());
     setParams.push_back("status = $" + std::to_string(paramIndex++));

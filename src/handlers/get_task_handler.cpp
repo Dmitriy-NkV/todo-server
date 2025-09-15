@@ -17,7 +17,7 @@ http::response< http::string_body > handlers::GetTaskHandler::handle_request(con
   {
     if (params.size() == 3)
     {
-      id = std::stoi(params[1]);
+      id = std::stoi(params[2]);
     }
     else
     {
