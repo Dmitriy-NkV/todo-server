@@ -23,19 +23,23 @@ void server::Session::on_read(beast::error_code ec, std::size_t bytes_transferre
 {
   boost::ignore_unused(bytes_transferred);
 
-  if (ec == http::error::end_of_stream)
-  {
-    return do_close();
-  }
-
   if (ec)
   {
+    log_connection_error("reading", ec);
+    if (ec == http::error::end_of_stream)
+    {
+      return do_close();
+    }
     return;
   }
+
+  log_connection("Request");
 
   std::unique_ptr< handlers::RequestHandler > handler = handlers::HandlerFactory().create_handler(req_);
   if (!handler)
   {
+    log_connection_error("reading", "Method not found");
+
     send_response(std::move(utils::create_error_response(http::status::not_found, "Not found")));
     return;
   }
@@ -47,6 +51,8 @@ void server::Session::on_read(beast::error_code ec, std::size_t bytes_transferre
   }
   catch (const std::exception& e)
   {
+    log_connection_error("handling", e.what());
+
     send_response(std::move(utils::create_error_response(http::status::internal_server_error, e.what())));
     return;
   }
@@ -66,8 +72,12 @@ void server::Session::on_write(bool keep_alive, beast::error_code ec, std::size_
 
   if (ec)
   {
+    log_connection_error("writing", ec);
+
     return;
   }
+
+  log_connection("Response");
 
   buffer_.consume(buffer_.size());
 
@@ -83,6 +93,53 @@ void server::Session::do_close()
 {
   beast::error_code ec;
   stream_.socket().shutdown(tcp::socket::shutdown_send, ec);
+}
+
+void server::Session::log_connection(const std::string& context)
+{
+  std::string log_message = std::format("{} - Method: {} Target: {}",
+    context,
+    std::string(req_.method_string()),
+    std::string(req_.target())
+  );
+
+  LOG(logger::LogLevel::INFO, log_message);
+}
+
+void server::Session::log_connection_error(const std::string& context, const std::string& error)
+{
+  std::string log_message = std::format("Error in {}: {} - Method: {} Target: {}",
+    context,
+    error,
+    std::string(req_.method_string()),
+    std::string(req_.target())
+  );
+
+  LOG(logger::LogLevel::ERROR, log_message);
+}
+
+void server::Session::log_connection_error(const std::string& context, boost::beast::error_code ec)
+{
+  std::string log_message;
+  if (ec == beast::error::timeout)
+  {
+    log_message = std::format("Timeout in {} - Method: {} Target: {}",
+      context,
+      std::string(req_.method_string()),
+      std::string(req_.target())
+    );
+
+    LOG(logger::LogLevel::WARNING, log_message);
+  }
+  else
+  {
+    log_message = std::format("Error in {} - Method: {} {} Target: {}",
+      context, ec.what(),
+      std::string(req_.method_string()),
+      std::string(req_.target())
+    );
+    LOG(logger::LogLevel::ERROR, log_message);
+  }
 }
 
 server::Listener::Listener(net::io_context& ioc, std::shared_ptr< database::Database > db):
@@ -105,6 +162,8 @@ void server::Listener::on_accept(beast::error_code ec, tcp::socket socket)
 {
   if (ec)
   {
+    std::string error = "Error in accepting: " + ec.what();
+    LOG(logger::LogLevel::ERROR, error);
     return;
   }
   else
@@ -179,6 +238,7 @@ void server::Server::start()
 {
   if (running_)
   {
+    LOG(logger::LogLevel::INFO, "Server already running");
     return;
   }
   running_ = true;
@@ -193,12 +253,15 @@ void server::Server::start()
       ioc_.run();
     });
   }
+
+  LOG(logger::LogLevel::INFO, "Server started");
 }
 
 void server::Server::stop()
 {
   if (!running_)
   {
+    LOG(logger::LogLevel::INFO, "Server already stoped");
     return;
   }
   running_ = false;
@@ -213,4 +276,6 @@ void server::Server::stop()
   }
 
   thread_pool_.clear();
+
+  LOG(logger::LogLevel::INFO, "Server stoped");
 }

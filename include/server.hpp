@@ -11,6 +11,7 @@
 #include "database.hpp"
 #include "handler_factory.hpp"
 #include "http_utils.hpp"
+#include "logger.hpp"
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>
@@ -36,6 +37,10 @@ namespace server
     beast::flat_buffer buffer_;
     http::request< http::string_body > req_;
     std::shared_ptr< database::Database > db_;
+
+    void log_connection(const std::string& context);
+    void log_connection_error(const std::string& context, const std::string& error);
+    void log_connection_error(const std::string& context, boost::beast::error_code ec);
   };
 
   class Listener: public std::enable_shared_from_this< Listener >
