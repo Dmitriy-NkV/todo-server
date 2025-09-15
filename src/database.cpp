@@ -169,14 +169,16 @@ int database::Database::create_task(const Task& task)
     auto timestamp = std::chrono::duration_cast< std::chrono::seconds >(
       task.get_created_at().time_since_epoch()).count();
 
-    auto result = txn.exec_params(
+    auto result = txn.exec(
       "INSERT INTO tasks (title, description, status, created_at) "
       "VALUES ($1, $2, $3, $4) "
       "RETURNING id",
-      task.get_title().value_or(""),
-      task.get_description().value_or(""),
-      task.get_status().value_or("todo"),
-      timestamp
+      pqxx::params {
+        task.get_title().value_or(""),
+        task.get_description().value_or(""),
+        task.get_status().value_or("In progress"),
+        timestamp
+      }
     );
 
     txn.commit();
@@ -223,10 +225,12 @@ std::optional< database::Task > database::Database::get_task_by_id(int id)
   {
     pqxx::read_transaction txn(*connection_);
 
-    auto result = txn.exec_params(
+    auto result = txn.exec(
       "SELECT id, title, description, status, created_at FROM tasks "
       "WHERE id = $1",
-      id
+      pqxx::params {
+        id
+      }
     );
 
     if (result.empty())
@@ -294,7 +298,7 @@ void database::Database::update_task(const Task& task)
 
     std::string query = "UPDATE tasks SET title = $1, description = $2, status = $3 WHERE id = $4";
 
-    txn.exec_params(query, params);
+    txn.exec(query, params);
     txn.commit();
   }
   catch (const pqxx::sql_error& e)
@@ -316,9 +320,11 @@ void database::Database::delete_task(int id)
   {
     pqxx::work txn(*connection_);
 
-    txn.exec_params(
+    txn.exec(
       "DELETE FROM tasks WHERE id = $1",
-      id
+      pqxx::params {
+        id
+      }
     );
 
     txn.commit();
@@ -348,9 +354,11 @@ bool database::Database::check_id_exists(int id) const
   {
     pqxx::read_transaction txn(*connection_);
 
-    auto result = txn.exec_params(
+    auto result = txn.exec(
       "SELECT EXISTS(SELECT 1 FROM tasks WHERE id = $1)",
-      id
+      pqxx::params {
+        id
+      }
     );
 
     return result[0][0].as< bool >();
