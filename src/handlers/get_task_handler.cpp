@@ -33,11 +33,14 @@ http::response< http::string_body > handlers::GetTaskHandler::handle_request(con
     return utils::create_error_response(http::status::bad_request, e.what());
   }
 
-  database::Task task(id);
   nlohmann::json json;
   try
   {
-    json = db->get_task_by_id(task);
+    auto task = db->get_task_by_id(id);
+    if (task.has_value())
+    {
+      json = task;
+    }
   }
   catch (const std::exception& e)
   {
