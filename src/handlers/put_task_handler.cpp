@@ -37,6 +37,10 @@ http::response< http::string_body > handlers::PutTaskHandler::handle_request(con
   {
     return utils::create_response(http::status::bad_request, true, "Wrong id");
   }
+  if (task.get_status() && utils::check_task_status(task.get_status().value()))
+  {
+    return utils::create_response(http::status::bad_request, true, "Status must be 'Todo', 'In progress' or 'Completed'");
+  }
 
   try
   {

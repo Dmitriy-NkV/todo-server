@@ -43,3 +43,29 @@ std::vector< std::string > utils::parse_parameters(beast::string_view target)
 
   return params;
 }
+
+bool utils::check_task_status(const std::string& status)
+{
+  return string_to_status(status) == TaskStatus::UNKNOWN;
+}
+
+utils::TaskStatus utils::string_to_status(const std::string& status)
+{
+  std::string formatted_status = boost::algorithm::to_lower_copy(status);
+  if (formatted_status == "todo")
+  {
+    return TaskStatus::TODO;
+  }
+  else if (formatted_status == "in progress")
+  {
+    return TaskStatus::IN_PROGRESS;
+  }
+  else if (formatted_status == "completed")
+  {
+    return TaskStatus::COMPLETED;
+  }
+  else
+  {
+    return TaskStatus::UNKNOWN;
+  }
+}

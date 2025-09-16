@@ -45,9 +45,9 @@ http::response< http::string_body > handlers::PostTaskHandler::handle_request(co
   {
     return utils::create_response(http::status::bad_request, true, "Wrong status");
   }
-  else if (task.get_status() != "In progress" && task.get_status() != "Completed")
+  else if (utils::check_task_status(task.get_status().value()))
   {
-    return utils::create_response(http::status::bad_request, true, "Status must be 'In progress' or 'Completed'");
+    return utils::create_response(http::status::bad_request, true, "Status must be 'Todo', 'In progress' or 'Completed'");
   }
 
   int id = 0;
