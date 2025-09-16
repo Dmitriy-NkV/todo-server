@@ -4,18 +4,13 @@
 bool handlers::PostTaskHandler::can_handle(const http::request< http::string_body >& req) const
 {
   auto params = utils::parse_parameters(req.target());
-  return req.method() == http::verb::post && params.size() >= 2 && params[1] == "task";
+  return req.method() == http::verb::post && params.size() == 2 && params[1] == "task";
 }
 
 http::response< http::string_body > handlers::PostTaskHandler::handle_request(const http::request< http::string_body >& req,
   std::shared_ptr< database::Database > db)
 {
   std::vector< std::string > params = utils::parse_parameters(req.target());
-
-  if (params.size() != 2)
-  {
-    return utils::create_response(http::status::bad_request, true, "Wrong parameters");
-  }
 
   database::Task task;
 

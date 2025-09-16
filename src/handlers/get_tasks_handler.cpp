@@ -4,18 +4,13 @@
 bool handlers::GetTasksHandler::can_handle(const http::request< http::string_body >& req) const
 {
   auto params = utils::parse_parameters(req.target());
-  return req.method() == http::verb::get && params.size() >= 2 && params[1] == "tasks";
+  return req.method() == http::verb::get && params.size() == 2 && params[1] == "tasks";
 }
 
 http::response< http::string_body > handlers::GetTasksHandler::handle_request(const http::request< http::string_body >& req,
   std::shared_ptr< database::Database > db)
 {
   std::vector< std::string > params = utils::parse_parameters(req.target());
-
-  if (params.size() != 2)
-  {
-    return utils::create_response(http::status::bad_request, true, "Wrong parameters");
-  }
 
   nlohmann::json json;
   try
