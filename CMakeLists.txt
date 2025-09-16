@@ -7,23 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(FetchContent)
 
-find_package(Boost 1.85.0 COMPONENTS system filesystem QUIET)
-if(NOT Boost_FOUND)
-  message(STATUS "Downloading Boost...")
-  FetchContent_Declare(boost
-    GIT_REPOSITORY https://github.com/boostorg/boost.git
-    GIT_TAG boost-1.85.0
-    GIT_SUBMODULES "libs/system;libs/filesystem;libs/asio;libs/beast"
-    GIT_PROGRESS TRUE
-  )
-endif()
-
-if(NOT Boost_POPULATED)
-  message(STATUS "Fetching Boost")
-  FetchContent_Populate(Boost)
-  message(STATUS "Fetching Boost - done")
-  set(BOOST_SOURCE ${boost_SOURCE_DIR})
-endif()
+find_package(Boost 1.83.0 REQUIRED COMPONENTS system filesystem)
 
 find_package(nlohmann_json 3.12.0 QUIET)
 if(NOT nlohmann_json_FOUND)
@@ -64,15 +48,17 @@ target_include_directories(Server PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/include/handlers
   ${CMAKE_CURRENT_SOURCE_DIR}/include/utils
+  ${Boost_INCLUDE_DIRS}
 )
 
 target_link_libraries(Server PRIVATE
+  Boost::boost
   nlohmann_json::nlohmann_json
   pqxx
   pthread
 )
 
-option(BUILD_TESTS "Build tests" ON)
+option(BUILD_TESTS "Build tests" OFF)
 
 if(BUILD_TESTS)
   add_subdirectory(tests)
