@@ -1,14 +1,12 @@
 FROM ubuntu:24.04
 
-RUN apt-get update && apt-get install -y \
-    software-properties-common \
-    && add-apt-repository -y ppa:ubuntu-toolchain-r/test \
-    && apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     g++-13 \
     cmake \
     make \
     git \
-    libboost-all-dev \
+    pkg-config \
     libpq-dev \
     postgresql-server-dev-all \
     && rm -rf /var/lib/apt/lists/*
@@ -25,4 +23,4 @@ RUN mkdir -p build && \
     cmake -DCMAKE_CXX_STANDARD=23 .. && \
     make -j$(nproc)
 
-CMD ["./build/server"]
+CMD ["./build/Server"]
