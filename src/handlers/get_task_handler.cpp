@@ -41,14 +41,15 @@ http::response< http::string_body > handlers::GetTaskHandler::handle_request(con
     {
       json = task;
     }
-    else
-    {
-      json = {};
-    }
   }
   catch (const std::exception& e)
   {
     return utils::create_response(http::status::internal_server_error, true, e.what());
+  }
+
+  if (json.empty())
+  {
+    return utils::create_response(http::status::ok, false, "No task with current id");
   }
 
   return utils::create_json_response(http::status::ok, json);
