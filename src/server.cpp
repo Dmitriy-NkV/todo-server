@@ -40,7 +40,7 @@ void server::Session::on_read(beast::error_code ec, std::size_t bytes_transferre
   {
     log_connection_error("reading", "Method not found");
 
-    send_response(std::move(utils::create_error_response(http::status::not_found, "Not found")));
+    send_response(std::move(utils::create_response(http::status::not_found, true, "Not found")));
     return;
   }
 
@@ -53,7 +53,7 @@ void server::Session::on_read(beast::error_code ec, std::size_t bytes_transferre
   {
     log_connection_error("handling", e.what());
 
-    send_response(std::move(utils::create_error_response(http::status::internal_server_error, e.what())));
+    send_response(std::move(utils::create_response(http::status::internal_server_error, true, e.what())));
     return;
   }
 
@@ -259,21 +259,16 @@ void server::Server::stop()
 {
   if (!running_)
   {
-    LOG(logger::LogLevel::INFO, "Server already stoped");
+    LOG(logger::LogLevel::INFO, "Server already stopped");
     return;
   }
   running_ = false;
 
   ioc_.stop();
-  for (size_t i = 0; i != threads_num_; ++i)
-  {
-    if (thread_pool_[i].joinable())
-    {
-      thread_pool_[i].join();
-    }
-  }
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   thread_pool_.clear();
 
-  LOG(logger::LogLevel::INFO, "Server stoped");
+  LOG(logger::LogLevel::INFO, "Server stopped");
 }

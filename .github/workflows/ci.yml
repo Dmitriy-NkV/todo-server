@@ -49,8 +49,7 @@ jobs:
 
     - name: Check build
       run: |
-        # Проверяем, что приложение собирается без ошибок
-        docker run --rm todo-app ls -la ./build/server
+        docker run --rm todo-app ls -la ./build/Server
 
   docker-compose-test:
     runs-on: ubuntu-latest

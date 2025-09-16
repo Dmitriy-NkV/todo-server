@@ -1,27 +1,40 @@
 #include "http_utils.hpp"
 
-http::response< http::string_body > utils::create_error_response(http::status status, const std::string& message)
+http::response< http::string_body > utils::create_response(http::status status, bool is_error, const std::string& message)
 {
-  http::response<http::string_body> res(status, 11);
+  http::response< http::string_body > res(status, 11);
   res.set(http::field::content_type, "application/json");
   res.set(http::field::access_control_allow_origin, "*");
 
-  nlohmann::json error_json = {
-    { "error", true },
+  nlohmann::json json = {
+    { "error", is_error },
     { "message", message },
     { "status", static_cast< int >(status) }
   };
 
-  res.body() = error_json.dump();
+  std::string log_message = std::format("Response created. Info: {}", message);
+  if (is_error)
+  {
+    LOG(logger::LogLevel::ERROR, log_message);
+  }
+  else
+  {
+    LOG(logger::LogLevel::INFO, std::format("Response created. Info: {}", log_message));
+  }
+
+  res.body() = json.dump();
   res.prepare_payload();
   return res;
 }
 
 http::response< http::string_body > utils::create_json_response(http::status status, const nlohmann::json& json)
 {
-  http::response<http::string_body> res(status, 11);
+  http::response< http::string_body > res(status, 11);
   res.set(http::field::content_type, "application/json");
   res.set(http::field::access_control_allow_origin, "*");
+
+  std::string log_message = "JSON response created";
+  LOG(logger::LogLevel::INFO, log_message);
 
   res.body() = json.dump();
   res.prepare_payload();
@@ -42,4 +55,30 @@ std::vector< std::string > utils::parse_parameters(beast::string_view target)
   }
 
   return params;
+}
+
+bool utils::check_task_status(const std::string& status)
+{
+  return string_to_status(status) == TaskStatus::UNKNOWN;
+}
+
+utils::TaskStatus utils::string_to_status(const std::string& status)
+{
+  std::string formatted_status = boost::algorithm::to_lower_copy(status);
+  if (formatted_status == "todo")
+  {
+    return TaskStatus::TODO;
+  }
+  else if (formatted_status == "in progress")
+  {
+    return TaskStatus::IN_PROGRESS;
+  }
+  else if (formatted_status == "completed")
+  {
+    return TaskStatus::COMPLETED;
+  }
+  else
+  {
+    return TaskStatus::UNKNOWN;
+  }
 }

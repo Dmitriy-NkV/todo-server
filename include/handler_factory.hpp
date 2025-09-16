@@ -11,6 +11,7 @@ namespace handlers
   {
   public:
     HandlerFactory();
+    ~HandlerFactory() = default;
     std::unique_ptr< RequestHandler > create_handler(const http::request< http::string_body >& req) const;
 
   private:
