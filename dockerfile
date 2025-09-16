@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     pkg-config \
     libpq-dev \
-    libboost-all-dev \
+    libboost-dev \
+    libboost-filesystem-dev \
     postgresql-server-dev-all \
     && rm -rf /var/lib/apt/lists/*
 
