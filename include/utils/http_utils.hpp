@@ -4,6 +4,7 @@
 #include <boost/beast/http.hpp>
 #include <boost/algorithm/string.hpp>
 #include <nlohmann/json.hpp>
+#include "logger.hpp"
 
 namespace beast = boost::beast;
 namespace http = beast::http;

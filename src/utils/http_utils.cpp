@@ -2,7 +2,7 @@
 
 http::response< http::string_body > utils::create_response(http::status status, bool is_error, const std::string& message)
 {
-  http::response<http::string_body> res(status, 11);
+  http::response< http::string_body > res(status, 11);
   res.set(http::field::content_type, "application/json");
   res.set(http::field::access_control_allow_origin, "*");
 
@@ -12,6 +12,16 @@ http::response< http::string_body > utils::create_response(http::status status, 
     { "status", static_cast< int >(status) }
   };
 
+  std::string log_message = std::format("Response created. Info: {}", message);
+  if (is_error)
+  {
+    LOG(logger::LogLevel::ERROR, log_message);
+  }
+  else
+  {
+    LOG(logger::LogLevel::INFO, std::format("Response created. Info: {}", log_message));
+  }
+
   res.body() = json.dump();
   res.prepare_payload();
   return res;
@@ -19,9 +29,12 @@ http::response< http::string_body > utils::create_response(http::status status, 
 
 http::response< http::string_body > utils::create_json_response(http::status status, const nlohmann::json& json)
 {
-  http::response<http::string_body> res(status, 11);
+  http::response< http::string_body > res(status, 11);
   res.set(http::field::content_type, "application/json");
   res.set(http::field::access_control_allow_origin, "*");
+
+  std::string log_message = "JSON response created";
+  LOG(logger::LogLevel::INFO, log_message);
 
   res.body() = json.dump();
   res.prepare_payload();
