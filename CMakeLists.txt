@@ -7,6 +7,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(FetchContent)
 
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+
 find_package(Boost 1.83.0 REQUIRED COMPONENTS system filesystem)
 
 find_package(nlohmann_json 3.12.0 QUIET)
@@ -30,33 +33,15 @@ if(NOT libpqxx_FOUND)
   FetchContent_MakeAvailable(libpqxx)
 endif()
 
-add_executable(Server
-  src/main.cpp
-  src/server.cpp
-  src/database.cpp
-  src/handler_factory.cpp
-  src/logger.cpp
-  src/utils/http_utils.cpp
-  src/handlers/delete_task_handler.cpp
-  src/handlers/get_task_handler.cpp
-  src/handlers/get_tasks_handler.cpp
-  src/handlers/post_task_handler.cpp
-  src/handlers/put_task_handler.cpp
-)
-
-target_include_directories(Server PRIVATE
+include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/include/handlers
   ${CMAKE_CURRENT_SOURCE_DIR}/include/utils
   ${Boost_INCLUDE_DIRS}
+  ${libpqxx_INCLUDE_DIRS}
 )
 
-target_link_libraries(Server PRIVATE
-  Boost::boost
-  nlohmann_json::nlohmann_json
-  pqxx
-  pthread
-)
+add_subdirectory(src)
 
 option(BUILD_TESTS "Build tests" OFF)
 
