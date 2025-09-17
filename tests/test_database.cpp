@@ -59,3 +59,21 @@ protected:
   std::string connection_string_;
   std::shared_ptr< database::Database > db_;
 };
+
+TEST_F(TestDatabaseFixture, CreateTask)
+{
+  database::Task task;
+  task.set_title("Title");
+  task.set_description("Descrtiption");
+  task.set_status("In progress");
+
+  int task_id = db_->create_task(task);
+  EXPECT_GT(task_id, 0);
+
+  auto result_task = db_->get_task_by_id(task_id);
+  ASSERT_TRUE(result_task);
+  EXPECT_EQ(result_task->get_id().value(), task_id);
+  EXPECT_EQ(result_task->get_title().value(), "Title");
+  EXPECT_EQ(result_task->get_description().value(), "Description");
+  EXPECT_EQ(result_task->get_status().value(), "In progress");
+}
