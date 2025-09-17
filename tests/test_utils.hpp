@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "database.hpp"
+#include "server.hpp"
 
 namespace tests
 {
@@ -60,5 +61,49 @@ namespace tests
 
     std::string connection_string_;
     std::shared_ptr< database::Database > db_;
+  };
+
+  class TestServerFixture: public TestDatabaseFixture
+  {
+  protected:
+    TestServerFixture():
+      server_host_("127.0.0.1"),
+      server_port_(9000),
+      threads_num_(2)
+    {
+      server_ = std::make_unique< server::Server >(server_host_, server_port_, threads_num_);
+
+    }
+
+    void SetUp() override
+    {
+      TestDatabaseFixture::SetUp();
+
+      server_host_ = "127.0.0.1";
+      server_port_ = 9000;
+      threads_num_ = 2;
+
+      server_ = std::make_unique< server::Server >(server_host_, server_port_, threads_num_);
+
+      server_->start();
+
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    void TearDown() override
+    {
+      server_->stop();
+      TestDatabaseFixture::TearDown();
+    }
+
+    std::string make_url(const std::string& target) const
+    {
+      return "http://" + server_host_ + ':' + std::to_string(server_port_) + target;
+    }
+
+    std::string server_host_;
+    unsigned short server_port_;
+    size_t threads_num_;
+    std::unique_ptr< server::Server > server_;
   };
 }
