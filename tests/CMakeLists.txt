@@ -10,9 +10,9 @@ if(NOT GoogleTest_FOUND)
 endif()
 
 add_executable(DatabaseTest
-  ../src/database.cpp
+  ../src/database/database.cpp
   test_main.cpp
-  database_test.cpp
+  test_database.cpp
 )
 
 target_link_libraries(DatabaseTest PRIVATE

@@ -1,10 +1,10 @@
 add_executable(Server
   main.cpp
-  server.cpp
-  database.cpp
-  handler_factory.cpp
   logger.cpp
+  server/server.cpp
+  database/database.cpp
   utils/http_utils.cpp
+  handlers/handler_factory.cpp
   handlers/delete_task_handler.cpp
   handlers/get_task_handler.cpp
   handlers/get_tasks_handler.cpp
