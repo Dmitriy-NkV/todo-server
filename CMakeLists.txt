@@ -35,7 +35,9 @@ endif()
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/database
   ${CMAKE_CURRENT_SOURCE_DIR}/include/handlers
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/server
   ${CMAKE_CURRENT_SOURCE_DIR}/include/utils
   ${Boost_INCLUDE_DIRS}
   ${libpqxx_INCLUDE_DIRS}
