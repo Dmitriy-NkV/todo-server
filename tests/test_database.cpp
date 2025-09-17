@@ -144,3 +144,29 @@ TEST_F(TestDatabaseFixture, UpdateNonExistentTask)
 
   ASSERT_THROW(db_->update_task(task), std::runtime_error);
 }
+
+TEST_F(TestDatabaseFixture, GetNonExistentTask)
+{
+  auto result = db_->get_task_by_id(1000000);
+  EXPECT_FALSE(result);
+}
+
+
+TEST_F(TestDatabaseFixture, DeleteTask)
+{
+  database::Task task;
+  task.set_title("Title");
+  task.set_description("Descrtiption");
+  task.set_status("In progress");
+  int task_id = db_->create_task(task);
+
+  ASSERT_NO_THROW(db_->delete_task(task_id));
+
+  auto result = db_->get_task_by_id(task_id);
+  EXPECT_FALSE(result);
+}
+
+TEST_F(TestDatabaseFixture, DeleteNonExistentTask)
+{
+  ASSERT_THROW(db_->delete_task(1000000), std::runtime_error);
+}
