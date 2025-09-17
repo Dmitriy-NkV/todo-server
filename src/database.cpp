@@ -42,17 +42,22 @@ std::chrono::system_clock::time_point database::Task::get_created_at() const
   return created_at_;
 }
 
-void database::Task::set_title(const std::string& title)
+void database::Task::set_id(const std::optional< int >& id)
+{
+  id_ = id;
+}
+
+void database::Task::set_title(const std::optional< std::string >& title)
 {
   title_ = title;
 }
 
-void database::Task::set_description(const std::string& description)
+void database::Task::set_description(const std::optional< std::string >& description)
 {
   description_ = description;
 }
 
-void database::Task::set_status(const std::string& status)
+void database::Task::set_status(const std::optional< std::string >& status)
 {
   status_ = status;
 }
@@ -143,7 +148,7 @@ void database::Database::initialize_database()
 
     txn.exec(R"(
       CREATE TABLE tasks (
-        id SERIAL PRIMARY KEY,
+        id PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
         title VARCHAR(255) NOT NULL,
         description TEXT,
         status VARCHAR(50) NOT NULL,

@@ -44,9 +44,10 @@ namespace database
     std::optional< std::string > get_status() const;
     std::chrono::system_clock::time_point get_created_at() const;
 
-    void set_title(const std::string& title);
-    void set_description(const std::string& description);
-    void set_status(const std::string& status);
+    void set_id(const std::optional< int >& id);
+    void set_title(const std::optional< std::string >& title);
+    void set_description(const std::optional< std::string >& description);
+    void set_status(const std::optional< std::string >& status);
 
   private:
     std::optional< int > id_;
@@ -75,7 +76,7 @@ namespace database
 
   private:
     std::string connection_string_;
-    std::unique_ptr<pqxx::connection> connection_;
+    std::unique_ptr< pqxx::connection > connection_;
     std::mutex db_mutex_;
 
     Task row_to_task(const pqxx::row& row) const;
