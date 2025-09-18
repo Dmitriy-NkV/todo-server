@@ -9,13 +9,14 @@ if(NOT GoogleTest_FOUND)
   FetchContent_MakeAvailable(GoogleTest)
 endif()
 
-add_executable(DatabaseTest
+add_executable(Tests
   ../src/database/database.cpp
   test_main.cpp
   test_database.cpp
+  test_server.cpp
 )
 
-target_link_libraries(DatabaseTest PRIVATE
+target_link_libraries(Tests PRIVATE
   Boost::boost
   nlohmann_json::nlohmann_json
   pthread
@@ -24,4 +25,5 @@ target_link_libraries(DatabaseTest PRIVATE
   gmock
 )
 
-enable_testing()
+include(GoogleTest)
+gtest_discover_tests(Tests)
