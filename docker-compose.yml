@@ -15,9 +15,27 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    profiles: ["app"]
+
+  postgres-test:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: dbtest
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    profiles: ["tests"]
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: dockerfile
     ports:
       - "9000:9000"
     environment:
@@ -34,6 +52,22 @@ services:
         condition: service_healthy
     stdin_open: true
     tty: true
+    profiles: ["app"]
+
+  tests:
+    build:
+      context: .
+      dockerfile: dockerfile.test
+    environment:
+      - DB_HOST=postgres-test
+      - DB_PORT=5432
+      - DB_NAME=dbtest
+      - DB_USER=postgres
+      - DB_PASSWORD=admin
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    profiles: ["tests"]
 
 volumes:
   postgres_data:
