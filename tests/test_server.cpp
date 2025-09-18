@@ -4,7 +4,7 @@ namespace tests
 {
   TEST_F(TestServerFixture, GetEmptyTasks)
   {
-    HttpClient client("127.0.0.1", 9000);
+    HttpClient client(server_host_, server_port_);
     http::response< http::string_body > response;
     ASSERT_NO_THROW(response = client.request(http::verb::get, "/tasks"));
 
@@ -18,7 +18,7 @@ namespace tests
 
   TEST_F(TestServerFixture, CreateAndGetTask)
   {
-    HttpClient client("127.0.0.1", 9000);
+    HttpClient client(server_host_, server_port_);
 
     nlohmann::json create_json = {
       { "title", "Title" },
@@ -51,7 +51,7 @@ namespace tests
 
   TEST_F(TestServerFixture, UpdateAndGetTask)
   {
-    HttpClient client("127.0.0.1", 9000);
+    HttpClient client(server_host_, server_port_);
 
     nlohmann::json create_json = {
       { "title", "Title" },
@@ -96,7 +96,7 @@ namespace tests
 
   TEST_F(TestServerFixture, DeleteTask)
   {
-    HttpClient client("127.0.0.1", 9000);
+    HttpClient client(server_host_, server_port_);
 
     nlohmann::json create_json = {
       { "title", "Title" },
@@ -133,11 +133,21 @@ namespace tests
 
   TEST_F(TestServerFixture, InvalidJson)
   {
-    HttpClient client("127.0.0.1", 9000);
+    HttpClient client(server_host_, server_port_);
 
-    http::response< http::string_body > create_response;
-    ASSERT_NO_THROW(create_response = client.request(http::verb::post, "/task", "invalid_json"));
+    http::response< http::string_body > response;
+    ASSERT_NO_THROW(response = client.request(http::verb::post, "/task", "invalid_json"));
 
-    EXPECT_EQ(create_response.result(), http::status::bad_request);
+    EXPECT_EQ(response.result(), http::status::bad_request);
+  }
+
+  TEST_F(TestServerFixture, NotFound)
+  {
+    HttpClient client(server_host_, server_port_);
+
+    http::response< http::string_body > response;
+    ASSERT_NO_THROW(response = client.request(http::verb::get, "/not found"));
+
+    EXPECT_EQ(response.result(), http::status::not_found);
   }
 }
