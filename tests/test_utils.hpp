@@ -10,11 +10,11 @@ namespace tests
   protected:
     void SetUp() override
     {
-      std::string db_host = "localhost";
-      std::string db_port =  "5432";
-      std::string db_name = "dbtest";
-      std::string db_user = "postgres";
-      std::string db_password = "admin";
+      std::string db_host = std::getenv("DB_HOST") ? std::getenv("DB_HOST") : "localhost";
+      std::string db_port = std::getenv("DB_PORT") ? std::getenv("DB_PORT") : "5432";
+      std::string db_name = std::getenv("DB_NAME") ? std::getenv("DB_NAME") : "dbtest";
+      std::string db_user = std::getenv("DB_USER") ? std::getenv("DB_USER") : "postgres";
+      std::string db_password = std::getenv("DB_PASSWORD") ? std::getenv("DB_PASSWORD") : "admin";
 
       connection_string_ = "host=" + db_host +
         " port=" + db_port +
