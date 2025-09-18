@@ -37,8 +37,7 @@ jobs:
         libpq-dev \
         libboost-dev \
         libboost-filesystem-dev \
-        postgresql-server-dev-all \
-        && rm -rf /var/lib/apt/lists/*
+        postgresql-server-dev-all
 
     - name: Build and test
       run: |
