@@ -130,4 +130,14 @@ namespace tests
     auto get_json_response = nlohmann::json::parse(get_response.body());
     EXPECT_EQ(get_json_response["message"].get< std::string >(), "No task with current id");
   }
+
+  TEST_F(TestServerFixture, InvalidJson)
+  {
+    HttpClient client("127.0.0.1", 9000);
+
+    http::response< http::string_body > create_response;
+    ASSERT_NO_THROW(create_response = client.request(http::verb::post, "/task", "invalid_json"));
+
+    EXPECT_EQ(create_response.result(), http::status::bad_request);
+  }
 }
