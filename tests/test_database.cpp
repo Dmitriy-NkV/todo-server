@@ -6,7 +6,7 @@ namespace tests
   {
     database::Task task;
     task.set_title("Title");
-    task.set_description("Descrtiption");
+    task.set_description("Description");
     task.set_status("In progress");
 
     int task_id = db_->create_task(task);
@@ -28,15 +28,15 @@ namespace tests
     db_->create_task(task1);
 
     database::Task task2;
-    task1.set_title("Title 2");
-    task1.set_status("Todo");
+    task2.set_title("Title 2");
+    task2.set_status("Todo");
     db_->create_task(task2);
 
     auto tasks = db_->get_all_tasks();
     ASSERT_EQ(tasks.size(), 2);
 
-    EXPECT_EQ(tasks[0].get_title().value(), "Title 2");
-    EXPECT_EQ(tasks[1].get_title().value(), "Title 1");
+    EXPECT_EQ(tasks[0].get_title().value(), "Title 1");
+    EXPECT_EQ(tasks[1].get_title().value(), "Title 2");
   }
 
   TEST_F(TestDatabaseFixture, UpdateTask)
@@ -50,7 +50,7 @@ namespace tests
     database::Task updated_task;
     updated_task.set_id(id);
     updated_task.set_title("New Title");
-    updated_task.set_description("New Descrtiption");
+    updated_task.set_description("New Description");
     updated_task.set_status("Completed");
     db_->update_task(updated_task);
 
@@ -66,7 +66,7 @@ namespace tests
   {
     database::Task task;
     task.set_title("Title");
-    task.set_description("Descrtiption");
+    task.set_description("Description");
     task.set_status("In progress");
     int id = db_->create_task(task);
 
@@ -81,7 +81,7 @@ namespace tests
     database::Task task;
     task.set_id(1000000);
     task.set_title("Title");
-    task.set_description("Descrtiption");
+    task.set_description("Description");
     task.set_status("In progress");
 
     ASSERT_THROW(db_->update_task(task), std::runtime_error);
@@ -98,7 +98,7 @@ namespace tests
   {
     database::Task task;
     task.set_title("Title");
-    task.set_description("Descrtiption");
+    task.set_description("Description");
     task.set_status("In progress");
     int task_id = db_->create_task(task);
 
