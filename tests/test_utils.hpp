@@ -66,15 +66,6 @@ namespace tests
   class TestServerFixture: public TestDatabaseFixture
   {
   protected:
-    TestServerFixture():
-      server_host_("127.0.0.1"),
-      server_port_(9000),
-      threads_num_(2)
-    {
-      server_ = std::make_unique< server::Server >(server_host_, server_port_, threads_num_);
-
-    }
-
     void SetUp() override
     {
       TestDatabaseFixture::SetUp();
@@ -83,7 +74,7 @@ namespace tests
       server_port_ = 9000;
       threads_num_ = 2;
 
-      server_ = std::make_unique< server::Server >(server_host_, server_port_, threads_num_);
+      server_ = std::make_unique< server::Server >(server_host_, server_port_, threads_num_, db_);
 
       server_->start();
 
@@ -112,14 +103,28 @@ namespace tests
   public:
     HttpClient(const std::string& host, unsigned short port):
       host_(host),
-      port_(port)
+      port_(port),
+      ioc_(),
+      stream_(ioc_),
+      connected_(false)
     {}
+
+    ~HttpClient()
+    {
+      disconnect();
+    }
 
     http::response< http::string_body > request(http::verb method, const std::string& target, const nlohmann::json& body = {})
     {
-      http::request< http::string_body > req(method, target, 11);
+      if (!connected_)
+      {
+        connect();
+      }
+
+      http::request<http::string_body> req(method, target, 11);
       req.set(http::field::host, host_);
       req.set(http::field::user_agent, "Client");
+      req.set(http::field::connection, "keep-alive");
 
       if (!body.empty())
       {
@@ -128,35 +133,48 @@ namespace tests
         req.prepare_payload();
       }
 
-      return connect(req);
+      stream_.expires_after(std::chrono::seconds(5));
+      http::write(stream_, req);
+
+      beast::flat_buffer buffer;
+      http::response< http::string_body > res;
+
+      stream_.expires_after(std::chrono::seconds(5));
+      http::read(stream_, buffer, res);
+
+      if (res[http::field::connection] == "close")
+      {
+        disconnect();
+      }
+      return res;
     }
 
   private:
     std::string host_;
     unsigned short port_;
+    net::io_context ioc_;
+    beast::tcp_stream stream_;
+    bool connected_;
 
-    http::response< http::string_body > connect(const http::request< http::string_body >& req)
+    void connect()
     {
-      net::io_context ioc;
-      tcp::resolver resolver(ioc);
-      beast::tcp_stream stream(ioc);
-
+      tcp::resolver resolver(ioc_);
       auto const results = resolver.resolve(host_, std::to_string(port_));
-      stream.connect(results);
-      http::write(stream, req);
 
-      beast::flat_buffer buffer;
-      http::response< http::string_body > res;
-      http::read(stream, buffer, res);
-      beast::error_code ec;
-      stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+      stream_.expires_after(std::chrono::seconds(5));
+      stream_.connect(results);
 
-      if (ec && ec != beast::errc::not_connected)
+      connected_ = true;
+    }
+
+    void disconnect()
+    {
+      if (connected_)
       {
-        throw beast::system_error(ec);
+        beast::error_code ec;
+        stream_.socket().shutdown(tcp::socket::shutdown_both, ec);
+        connected_ = false;
       }
-
-      return res;
     }
   };
 }
