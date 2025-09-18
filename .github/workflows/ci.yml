@@ -36,8 +36,7 @@ jobs:
         pkg-config \
         libpq-dev \
         libboost-dev \
-        libboost-filesystem-dev \
-        postgresql-server-dev-all
+        libboost-filesystem-dev
 
     - name: Build and test
       run: |
