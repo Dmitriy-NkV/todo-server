@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <boost/beast/version.hpp>
 #include "database.hpp"
 #include "server.hpp"
 
