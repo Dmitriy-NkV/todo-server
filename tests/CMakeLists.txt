@@ -10,10 +10,19 @@ if(NOT GoogleTest_FOUND)
 endif()
 
 add_executable(Tests
-  ../src/database/database.cpp
   test_main.cpp
   test_database.cpp
   test_server.cpp
+  ../src/logger.cpp
+  ../src/server/server.cpp
+  ../src/database/database.cpp
+  ../src/utils/http_utils.cpp
+  ../src/handlers/handler_factory.cpp
+  ../src/handlers/delete_task_handler.cpp
+  ../src/handlers/get_task_handler.cpp
+  ../src/handlers/get_tasks_handler.cpp
+  ../src/handlers/post_task_handler.cpp
+  ../src/handlers/put_task_handler.cpp
 )
 
 target_link_libraries(Tests PRIVATE

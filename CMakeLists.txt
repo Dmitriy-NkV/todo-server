@@ -45,7 +45,7 @@ include_directories(
 
 add_subdirectory(src)
 
-option(BUILD_TESTS "Build tests" OFF)
+option(BUILD_TESTS "Build tests" ON)
 
 if(BUILD_TESTS)
   add_subdirectory(tests)
