@@ -148,7 +148,7 @@ void database::Database::initialize_database()
 
     txn.exec(R"(
       CREATE TABLE tasks (
-        id PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+        id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
         title VARCHAR(255) NOT NULL,
         description TEXT,
         status VARCHAR(50) NOT NULL,
