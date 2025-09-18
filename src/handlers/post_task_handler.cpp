@@ -56,7 +56,7 @@ http::response< http::string_body > handlers::PostTaskHandler::handle_request(co
     return utils::create_response(http::status::internal_server_error, true, e.what());
   }
 
-  return utils::create_response(http::status::created, false, std::format("Id = {}", id));
+  return utils::create_response(http::status::created, false, std::to_string(id));
 }
 
 std::unique_ptr< handlers::RequestHandler > handlers::PostTaskHandler::create() const

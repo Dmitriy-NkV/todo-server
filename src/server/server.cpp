@@ -25,11 +25,12 @@ void server::Session::on_read(beast::error_code ec, std::size_t bytes_transferre
 
   if (ec)
   {
-    log_connection_error("reading", ec);
     if (ec == http::error::end_of_stream)
     {
+      LOG(logger::LogLevel::INFO, "Connection closed by client");
       return do_close();
     }
+    log_connection_error("reading", ec);
     return;
   }
 
@@ -97,7 +98,7 @@ void server::Session::do_close()
 
 void server::Session::log_connection(const std::string& context)
 {
-  std::string log_message = std::format("{} - Method: {} Target: {}",
+  std::string log_message = std::format("{} - Method: {}; Target: {}",
     context,
     std::string(req_.method_string()),
     std::string(req_.target())
@@ -108,7 +109,7 @@ void server::Session::log_connection(const std::string& context)
 
 void server::Session::log_connection_error(const std::string& context, const std::string& error)
 {
-  std::string log_message = std::format("Error in {}: {} - Method: {} Target: {}",
+  std::string log_message = std::format("Error in {}: {} - Method: {}; Target: {}",
     context,
     error,
     std::string(req_.method_string()),
@@ -131,8 +132,9 @@ void server::Session::log_connection_error(const std::string& context, boost::be
   }
   else
   {
-    log_message = std::format("Error in {} - Method: {} {} Target: {}",
-      context, ec.what(),
+    log_message = std::format("Error in {}: {} - Method: {}; Target: {}",
+      context,
+      ec.what(),
       std::string(req_.method_string()),
       std::string(req_.target())
     );

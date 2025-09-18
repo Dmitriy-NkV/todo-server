@@ -25,4 +25,4 @@ RUN mkdir -p build && \
     cmake -DCMAKE_CXX_STANDARD=23 -DBUILD_TESTS=ON .. && \
     make -j$(nproc)
 
-CMD ["./build/src/Server"]
+CMD ["./build/tests/Tests"]
