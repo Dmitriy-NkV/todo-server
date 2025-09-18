@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <boost/beast/version.hpp>
 #include "database.hpp"
 #include "server.hpp"
 
@@ -105,5 +106,58 @@ namespace tests
     unsigned short server_port_;
     size_t threads_num_;
     std::unique_ptr< server::Server > server_;
+  };
+
+  class HttpClient
+  {
+  public:
+    HttpClient(const std::string& host, unsigned short port):
+      host_(host),
+      port_(port)
+    {}
+
+    http::response< http::string_body > request(http::verb method, const std::string& target, const nlohmann::json& body = {})
+    {
+      http::request< http::string_body > req(method, target, 11);
+      req.set(http::field::host, host_);
+      req.set(http::field::user_agent, "Client");
+
+      if (!body.empty())
+      {
+        req.set(http::field::content_type, "application/json");
+        req.body() = body.dump();
+        req.prepare_payload();
+      }
+
+      return connect(req);
+    }
+
+  private:
+    std::string host_;
+    unsigned short port_;
+
+    http::response< http::string_body > connect(const http::request< http::string_body >& req)
+    {
+      net::io_context ioc;
+      tcp::resolver resolver(ioc);
+      beast::tcp_stream stream(ioc);
+
+      auto const results = resolver.resolve(host_, std::to_string(port_));
+      stream.connect(results);
+      http::write(stream, req);
+
+      beast::flat_buffer buffer;
+      http::response< http::string_body > res;
+      http::read(stream, buffer, res);
+      beast::error_code ec;
+      stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+
+      if (ec && ec != beast::errc::not_connected)
+      {
+        throw beast::system_error(ec);
+      }
+
+      return res;
+    }
   };
 }
